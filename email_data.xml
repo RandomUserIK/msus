@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>email_data</id>
+	<initials>EMD</initials>
+	<title>Email Data</title>
+	<defaultRole>true</defaultRole>
+	<transitionRole>false</transitionRole>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>Admin</title>
+	</role>
+	<role>
+		<id>referent</id>
+		<title>Referent</title>
+	</role>
+	<role>
+		<id>kontrolor</id>
+		<title>Kontrolór</title>
+	</role>
+
+	<!-- DATA -->
+	<data type="text">
+		<id>faq_parent_mongo_id</id>
+		<title/>
+	</data>
+	<data type="text">
+		<id>client_email</id>
+		<title>Emailová adresa klienta</title>
+		<valid>email</valid>
+	</data>
+	<data type="text">
+		<id>subject</id>
+		<title>Predmet emailu</title>
+	</data>
+	<data type="text">
+		<id>content</id>
+		<title>Obsah emailu</title>
+		<values>area</values>
+	</data>
+	<data type="file">
+		<id>attachments</id>
+		<title>Prílohy</title>
+	</data>
+	<data type="text">
+		<id>sent_date</id>
+		<title>Dátum odoslania</title>
+	</data>
+
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>2</id>
+		<x>300</x>
+		<y>100</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Email</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>referent</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>kontrolor</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>email</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>subject</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>content</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>4</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>attachments</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>sent_date</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+	</transition>
+
+	<!-- PLACES -->
+	<place>
+		<id>1</id>
+		<x>174</x>
+		<y>100</y>
+		<label/>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+
+	<!-- ARCS -->
+	<arc>
+		<id>3</id>
+		<type>read</type>
+		<sourceId>1</sourceId>
+		<destinationId>2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>

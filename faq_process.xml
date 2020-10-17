@@ -1,0 +1,2243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>faq</id>
+	<initials>FAQ</initials>
+	<title>FAQ Process</title>
+	<defaultRole>true</defaultRole>
+	<transitionRole>false</transitionRole>
+	<!-- TRANSACTIONS -->
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>Admin</title>
+	</role>
+	<role>
+		<id>system</id>
+		<title>Systém</title>
+	</role>
+	<role>
+		<id>kontrolor</id>
+		<title>Kontrolór</title>
+	</role>
+	<role>
+		<id>referent</id>
+		<title>Referent</title>
+	</role>
+
+	<!-- DATA -->
+	<data type="text" immediate="true">
+		<id>status</id>
+		<title>Stav úlohy</title>
+	</data>
+
+	<!-- subprocesses refs -->
+	<data type="taskRef">
+		<id>email_data</id>
+		<title>Dáta z prijatého e-mailu</title>
+	</data>
+	<data type="taskRef">
+		<id>ticket_data</id>
+		<title>Dáta z prijatého ticketu</title>
+	</data>
+
+	<!-- variable arcs data -->
+	<data type="number">
+		<id>1009</id>
+		<title>Na ďalšie spracovanie</title>
+		<init>1</init>
+	</data>
+	<data type="number">
+		<id>1013</id>
+		<title>Na kontrolu</title>
+		<init>0</init>
+	</data>
+	<data type="number">
+		<id>1021</id>
+		<title>Kontrola - schválenie</title>
+		<init>1</init>
+	</data>
+	<data type="number">
+		<id>1031</id>
+		<title>Kontrola - zamietnutie</title>
+		<init>0</init>
+	</data>
+
+
+	<data type="text">
+		<id>channel</id>
+		<title>Kanál</title>
+	</data>
+	<data type="text">
+		<id>client_email</id>
+		<title>Emailová adresa klienta</title>
+		<valid>email</valid>
+	</data>
+	<data type="text">
+		<id>identifier</id>
+		<title>Identifikátor úlohy</title>
+	</data>
+	<data type="text">
+		<id>review_note</id>
+		<title>Poznámka z kontroly</title>
+		<length>1950</length>
+	</data>
+	<data type="enumeration">
+		<id>further_processing</id>
+		<title>Ďalšie spracovanie</title>
+		<values>Vyriešiť</values>
+		<values>Poslať na kontrolu</values>
+		<values>Označiť ako duplicitu</values>
+		<values>Chýbajúce prílohy</values>
+		<values>Delegovať na iné oddelenie</values>
+		<values>Skartovať</values>
+		<values>Vyžiadať dokument</values>
+		<values>Označiť ako prílohu k hlavnému dokumentu</values>
+		<init>option1</init>
+	</data>
+	<data type="text">
+		<id>resolved_without_review_cause</id>
+		<title>Dôvod vyriešenia bez kontroly</title>
+		<values>area</values>
+		<length>1950</length>
+	</data>
+	<data type="user" immediate="true">
+		<id>controller</id>
+		<title>Výber kontrolóra</title>
+		<values>kontrolor</values>
+	</data>
+	<data type="enumeration">
+		<id>suspension</id>
+		<title>Pozastavenie</title>
+		<values>Obnoviť</values>
+		<values>Pozastaviť</values>
+	</data>
+	<data type="text">
+		<id>suspension_note</id>
+		<title>Poznámka k pozastaveniu</title>
+		<values>area</values>
+		<length>1950</length>
+	</data>
+	<data type="date">
+		<id>suspension_date</id>
+		<title>Dátum pozastavenia</title>
+	</data>
+	<data type="user">
+		<id>suspended_by</id>
+		<title>Pozastavil</title>
+	</data>
+	<data type="boolean">
+		<id>is_attachment</id>
+		<title>Je príloha k dokumentu?</title>
+		<init>false</init>
+	</data>
+	<data type="multichoice">
+		<id>main_doc_list</id>
+		<title>Spárovanie s hlavným dokumentom</title>
+	</data>
+	<data type="text">
+		<id>history</id>
+		<title>História</title>
+		<values>area</values>
+	</data>
+	<data type="boolean">
+		<id>review_approved</id>
+		<title>Schváliť</title>
+		<init>true</init>
+	</data>
+
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>4</id>
+		<x>420</x>
+		<y>420</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Nová úloha</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>referent</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>nova_uloha</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>ticket_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>review_note</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>further_processing</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>required</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>resolved_without_review_cause</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>3</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>controller</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>4</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>suspension</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>5</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>suspension_note</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>4</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>suspension_date</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>5</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>suspended_by</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>6</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>is_attachment</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>7</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>main_doc_list</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>8</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>6</y>
+					<rows>3</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+
+		<event type="assign">
+			<id>assign_4</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_4</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_4</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_4</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>8</id>
+		<x>421</x>
+		<y>503</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Presun na iné oddelenie</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>referent</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_8</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_8</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_8</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_8</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>13</id>
+		<x>525</x>
+		<y>249</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Kontrola</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>kontrolor</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>kontrola</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>ticket_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>4</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>review_note</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>review_approved</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>status</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+
+		<event type="assign">
+			<id>assign_13</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_13</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_13</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_13</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>16</id>
+		<x>525</x>
+		<y>64</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyriešená s kontrolou</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_16</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_16</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_16</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_16</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>19</id>
+		<x>718</x>
+		<y>250</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyriešiť bez kontroly</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_19</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_19</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_19</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_19</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>20</id>
+		<x>719</x>
+		<y>324</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Označiť ako duplicitu</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_20</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_20</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_20</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_20</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>21</id>
+		<x>717</x>
+		<y>420</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Označiť ako prílohu</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_21</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_21</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_21</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_21</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>22</id>
+		<x>721</x>
+		<y>511</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Skartovať</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<roleRef>
+			<id>referent</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_22</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_22</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_22</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_22</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>23</id>
+		<x>725</x>
+		<y>580</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyžiadať dokument</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_23</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_23</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_23</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_23</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>35</id>
+		<x>919</x>
+		<y>580</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Čakanie na prílohy</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_35</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_35</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_35</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_35</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>37</id>
+		<x>917</x>
+		<y>510</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Skartovaná úloha</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>skartovana_uloha</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>ticket_data</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>status</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+
+		<event type="assign">
+			<id>assign_37</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_37</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_37</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_37</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>39</id>
+		<x>911</x>
+		<y>420</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Príloha k hlavnému dokumentu</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_39</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_39</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_39</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_39</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>41</id>
+		<x>715</x>
+		<y>63</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyriešená bez kontroly</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>vyriesena_bez_kontroly</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>ticket_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>status</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>resolved_without_review_cause</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+
+		<event type="assign">
+			<id>assign_41</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_41</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_41</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_41</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>43</id>
+		<x>908</x>
+		<y>325</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Duplicitný dokument</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>duplicitny_dokument</id>
+			<layout>layout</layout>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>ticket_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>status</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+
+		<event type="assign">
+			<id>assign_43</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_43</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_43</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_43</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>56</id>
+		<x>721</x>
+		<y>687</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyžiadaný dokument bol prijatý</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_56</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_56</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_56</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_56</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>57</id>
+		<x>918</x>
+		<y>685</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Vyžiadaný dokument nebol prijatý</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_57</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_57</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_57</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_57</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>62</id>
+		<x>1161</x>
+		<y>685</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Klient nereaguje</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_62</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_62</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_62</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_62</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+	<transition>
+		<id>70</id>
+		<x>1368</x>
+		<y>684</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Reklamácia</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+
+		<event type="assign">
+			<id>assign_70</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="cancel">
+			<id>cancel_70</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="delegate">
+			<id>delegate_70</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+		<event type="finish">
+			<id>finish_70</id>
+			<actions phase="post">
+				<action>
+					<!-- @formatter:off -->
+					<!-- @formatter:on -->
+				</action>
+			</actions>
+		</event>
+	</transition>
+
+	<!-- PLACES -->
+	<place>
+		<id>3</id>
+		<x>300</x>
+		<y>420</y>
+		<label>Nová úloha</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>6</id>
+		<x>527</x>
+		<y>420</y>
+		<label>Ďalšie spracovanie</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>11</id>
+		<x>525</x>
+		<y>331</y>
+		<label>Odoslaná na kontrolu</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>15</id>
+		<x>525</x>
+		<y>155</y>
+		<label>Vyriešená s kontrolou</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>34</id>
+		<x>819</x>
+		<y>580</y>
+		<label/>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>36</id>
+		<x>818</x>
+		<y>511</y>
+		<label/>>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>38</id>
+		<x>817</x>
+		<y>420</y>
+		<label/>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>40</id>
+		<x>716</x>
+		<y>156</y>
+		<label>Vyriešená bez kontroly</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>42</id>
+		<x>814</x>
+		<y>325</y>
+		<label/>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>61</id>
+		<x>1056</x>
+		<y>685</y>
+		<label/>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>69</id>
+		<x>1256</x>
+		<y>685</y>
+		<label/>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+
+	<!-- ARCS -->
+	<arc>
+		<id>5</id>
+		<type>regular</type>
+		<sourceId>3</sourceId>
+		<destinationId>4</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>7</id>
+		<type>variable</type>
+		<sourceId>4</sourceId>
+		<destinationId>6</destinationId>
+		<multiplicity>1009</multiplicity>
+	</arc>
+	<arc>
+		<id>9</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>8</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>527</x><y>503</y></breakPoint>
+	</arc>
+	<arc>
+		<id>10</id>
+		<type>regular</type>
+		<sourceId>8</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>298</x><y>503</y></breakPoint>
+	</arc>
+	<arc>
+		<id>12</id>
+		<type>variable</type>
+		<sourceId>4</sourceId>
+		<destinationId>11</destinationId>
+		<multiplicity>1013</multiplicity>
+		<breakPoint><x>420</x><y>331</y></breakPoint>
+	</arc>
+	<arc>
+		<id>14</id>
+		<type>regular</type>
+		<sourceId>11</sourceId>
+		<destinationId>13</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>17</id>
+		<type>read</type>
+		<sourceId>15</sourceId>
+		<destinationId>16</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>18</id>
+		<type>variable</type>
+		<sourceId>13</sourceId>
+		<destinationId>15</destinationId>
+		<multiplicity>1021</multiplicity>
+	</arc>
+	<arc>
+		<id>29</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>19</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>609</x><y>420</y></breakPoint>
+		<breakPoint><x>609</x><y>250</y></breakPoint>
+	</arc>
+	<arc>
+		<id>30</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>20</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>608</x><y>421</y></breakPoint>
+		<breakPoint><x>609</x><y>324</y></breakPoint>
+	</arc>
+	<arc>
+		<id>31</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>21</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>32</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>22</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>608</x><y>420</y></breakPoint>
+		<breakPoint><x>608</x><y>511</y></breakPoint>
+	</arc>
+	<arc>
+		<id>33</id>
+		<type>regular</type>
+		<sourceId>6</sourceId>
+		<destinationId>23</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>608</x><y>420</y></breakPoint>
+		<breakPoint><x>608</x><y>578</y></breakPoint>
+	</arc>
+	<arc>
+		<id>44</id>
+		<type>read</type>
+		<sourceId>42</sourceId>
+		<destinationId>43</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>45</id>
+		<type>read</type>
+		<sourceId>38</sourceId>
+		<destinationId>39</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>46</id>
+		<type>read</type>
+		<sourceId>34</sourceId>
+		<destinationId>35</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>47</id>
+		<type>regular</type>
+		<sourceId>20</sourceId>
+		<destinationId>42</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>48</id>
+		<type>regular</type>
+		<sourceId>21</sourceId>
+		<destinationId>38</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>49</id>
+		<type>regular</type>
+		<sourceId>22</sourceId>
+		<destinationId>36</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>51</id>
+		<type>read</type>
+		<sourceId>36</sourceId>
+		<destinationId>37</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>52</id>
+		<type>read</type>
+		<sourceId>40</sourceId>
+		<destinationId>41</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>53</id>
+		<type>regular</type>
+		<sourceId>19</sourceId>
+		<destinationId>40</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>54</id>
+		<type>variable</type>
+		<sourceId>13</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>1031</multiplicity>
+		<breakPoint><x>300</x><y>249</y></breakPoint>
+	</arc>
+	<arc>
+		<id>55</id>
+		<type>regular</type>
+		<sourceId>23</sourceId>
+		<destinationId>34</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>60</id>
+		<type>regular</type>
+		<sourceId>56</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>295</x><y>686</y></breakPoint>
+	</arc>
+	<arc>
+		<id>63</id>
+		<type>regular</type>
+		<sourceId>57</sourceId>
+		<destinationId>61</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>64</id>
+		<type>regular</type>
+		<sourceId>61</sourceId>
+		<destinationId>62</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>71</id>
+		<type>regular</type>
+		<sourceId>62</sourceId>
+		<destinationId>69</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>72</id>
+		<type>regular</type>
+		<sourceId>69</sourceId>
+		<destinationId>70</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>73</id>
+		<type>reset</type>
+		<sourceId>40</sourceId>
+		<destinationId>70</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>1367</x><y>155</y></breakPoint>
+	</arc>
+	<arc>
+		<id>74</id>
+		<type>reset</type>
+		<sourceId>15</sourceId>
+		<destinationId>70</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>579</x><y>154</y></breakPoint>
+		<breakPoint><x>617</x><y>154</y></breakPoint>
+		<breakPoint><x>618</x><y>21</y></breakPoint>
+		<breakPoint><x>1366</x><y>21</y></breakPoint>
+	</arc>
+	<arc>
+		<id>75</id>
+		<type>regular</type>
+		<sourceId>19</sourceId>
+		<destinationId>69</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>1257</x><y>250</y></breakPoint>
+	</arc>
+	<arc>
+		<id>76</id>
+		<type>regular</type>
+		<sourceId>13</sourceId>
+		<destinationId>69</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>588</x><y>249</y></breakPoint>
+		<breakPoint><x>616</x><y>219</y></breakPoint>
+		<breakPoint><x>619</x><y>21</y></breakPoint>
+		<breakPoint><x>1257</x><y>20</y></breakPoint>
+	</arc>
+	<arc>
+		<id>77</id>
+		<type>regular</type>
+		<sourceId>70</sourceId>
+		<destinationId>3</destinationId>
+		<multiplicity>1</multiplicity>
+		<breakPoint><x>1370</x><y>777</y></breakPoint>
+		<breakPoint><x>294</x><y>774</y></breakPoint>
+	</arc>
+	<arc>
+		<id>78</id>
+		<type>regular</type>
+		<sourceId>34</sourceId>
+		<destinationId>57</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>79</id>
+		<type>regular</type>
+		<sourceId>34</sourceId>
+		<destinationId>56</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>
