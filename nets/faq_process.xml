@@ -1,0 +1,2830 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+    <id>faq</id>
+    <initials>FAQ</initials>
+    <title>FAQ Process</title>
+    <icon>assignment</icon>
+    <defaultRole>true</defaultRole>
+    <transitionRole>false</transitionRole>
+    <!-- TRANSACTIONS -->
+    <!-- ROLES -->
+    <role>
+        <id>admin</id>
+        <title>Admin</title>
+    </role>
+    <role>
+        <id>system</id>
+        <title>Systém</title>
+    </role>
+    <role>
+        <id>kontrolor</id>
+        <title>Kontrolór</title>
+    </role>
+    <role>
+        <id>referent</id>
+        <title>Referent</title>
+    </role>
+
+    <!-- DATA -->
+    <data type="text" immediate="true">
+        <id>status</id>
+        <title>Stav úlohy</title>
+        <init>Nová úloha</init>
+    </data>
+
+    <!-- subprocesses refs -->
+    <data type="taskRef">
+        <id>email_data</id>
+        <title>Dáta z prijatého e-mailu</title>
+    </data>
+    <data type="taskRef">
+        <id>ticket_data</id>
+        <title>Dáta z prijatého ticketu</title>
+    </data>
+
+    <!-- variable arcs data -->
+    <data type="number">
+        <id>1009</id>
+        <title>Na ďalšie spracovanie</title>
+        <init>1</init>
+    </data>
+    <data type="number">
+        <id>1013</id>
+        <title>Na kontrolu</title>
+        <init>0</init>
+    </data>
+    <data type="number">
+        <id>1021</id>
+        <title>Kontrola - schválenie</title>
+        <init>1</init>
+    </data>
+    <data type="number">
+        <id>1031</id>
+        <title>Kontrola - zamietnutie</title>
+        <init>0</init>
+    </data>
+
+
+    <data type="text">
+        <id>channel</id>
+        <title>Kanál</title>
+    </data>
+    <data type="text">
+        <id>client_email</id>
+        <title>Emailová adresa klienta</title>
+        <valid>email</valid>
+    </data>
+    <data type="text">
+        <id>identifier</id>
+        <title>Identifikátor úlohy</title>
+    </data>
+    <data type="text">
+        <id>review_note</id>
+        <title>Poznámka z kontroly</title>
+        <length>1950</length>
+    </data>
+    <data type="enumeration">
+        <id>further_processing</id>
+        <title>Ďalšie spracovanie</title>
+        <values>Vyriešiť bez kontroly</values>
+        <values>Poslať na kontrolu</values>
+        <values>Označiť ako duplicitu</values>
+        <values>Presun na iné oddelenie</values>
+        <values>Skartovať</values>
+        <values>Vyžiadať dokument</values>
+        <values>Označiť ako prílohu k hlavnému dokumentu</values>
+        <action trigger="set">
+            <!-- @formatter:off -->
+            further_processing: f.further_processing,
+            controller: f.controller,
+            resolved_without_review_cause: f.resolved_without_review_cause,
+            main_doc_list: f.main_doc_list,
+            is_attachment: f.is_attachment,
+            nova_uloha: t.4;
+
+            make controller, editable on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+            make controller, required on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+
+            make controller, hidden on nova_uloha when { further_processing.value != "Poslať na kontrolu" }
+            make controller, optional on nova_uloha when { further_processing.value != "Poslať na kontrolu" }
+
+            make resolved_without_review_cause, editable on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+            make resolved_without_review_cause, optional on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+
+            make resolved_without_review_cause, hidden on nova_uloha when { further_processing.value != "Vyriešiť bez kontroly" }
+            make resolved_without_review_cause, optional on nova_uloha when { further_processing.value != "Vyriešiť bez kontroly" }
+
+            make main_doc_list, editable on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+            make main_doc_list, required on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+
+            make is_attachment, required on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+            make is_attachment, optional on nova_uloha when { further_processing.value != "Označiť ako prílohu k hlavnému dokumentu" }
+
+            make main_doc_list, hidden on nova_uloha when { further_processing.value != "Označiť ako prílohu k hlavnému dokumentu" }
+            make main_doc_list, optional on nova_uloha when { further_processing.value != "Označiť ako prílohu k hlavnému dokumentu" }
+            <!-- @formatter:on -->
+        </action>
+        <action trigger="set">
+            <!-- @formatter:off -->
+            further_processing: f.further_processing,
+            to_shift_route: f.1009,
+            to_review_route: f.1013;
+
+            change to_shift_route value { return !(further_processing.value == "Poslať na kontrolu") ? 1 : 0 }
+            change to_review_route value { return further_processing.value == "Poslať na kontrolu" ? 1 : 0 }
+            <!-- @formatter:on -->
+        </action>
+    </data>
+    <data type="text">
+        <id>resolved_without_review_cause</id>
+        <title>Dôvod vyriešenia bez kontroly</title>
+        <values>area</values>
+        <length>1950</length>
+    </data>
+    <data type="user" immediate="true">
+        <id>controller</id>
+        <title>Výber kontrolóra</title>
+        <values>kontrolor</values>
+    </data>
+    <data type="enumeration" immediate="true">
+        <id>suspension</id>
+        <title>Pozastavenie</title>
+        <values>Obnoviť</values>
+        <values>Pozastaviť</values>
+        <action trigger="set">
+            <!-- @formatter:off-->
+			suspension: f.suspension,
+			suspension_date: f.suspension_date,
+			suspended_by: f.suspended_by,
+			nova_uloha: t.4;
+
+			if (suspension.value?.defaultValue == "Pozastaviť") {
+				make suspension_date, visible on nova_uloha when { true }
+				make suspension_date, optional on nova_uloha when { true }
+
+				make suspended_by, visible on nova_uloha when { true }
+				make suspended_by, optional on nova_uloha when { true }
+
+                change suspension_date value { return new Date() }
+                <!-- TODO: uncomment after engine bug has been fixed -->
+                <!-- change suspended_by value { return loggedUser() } -->
+                changeCaseProperty "icon" about { "pause_circle_outline" }
+			} else {
+				make suspended_by, hidden on nova_uloha when { true }
+				make suspended_by, optional on nova_uloha when { true }
+
+				make suspension_date, hidden on nova_uloha when { true }
+				make suspension_date, optional on nova_uloha when { true }
+
+                changeCaseProperty "icon" about { "assignment" }
+			}
+			<!-- @formatter:on-->
+        </action>
+        <action trigger="set">
+            <!-- @formatter:off -->
+            client_email: f.client_email,
+            identifier: f.identifier,
+            review_note: f.review_note,
+            further_processing: f.further_processing,
+            resolved_without_review_cause: f.resolved_without_review_cause,
+            controller: f.controller,
+            is_attachment: f.is_attachment,
+            main_doc_list: f.main_doc_list,
+            suspension: f.suspension,
+            nova_uloha: t.4;
+
+            if (suspension.value?.defaultValue == "Pozastaviť") {
+                make client_email, visible on nova_uloha when { true }
+                make client_email, optional on nova_uloha when { true }
+
+                make identifier, visible on nova_uloha when { true }
+                make identifier, optional on nova_uloha when { true }
+
+                make review_note, visible on nova_uloha when { review_note.value != null }
+                make review_note, optional on nova_uloha when { review_note.value != null }
+
+                make further_processing, visible on nova_uloha when { true }
+                make further_processing, optional on nova_uloha when { true }
+
+                make resolved_without_review_cause, visible on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+                make resolved_without_review_cause, optional on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+
+                make controller, visible on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+                make controller, optional on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+
+                make is_attachment, visible on nova_uloha when { true }
+                make is_attachment, optional on nova_uloha when { true }
+
+                make main_doc_list, visible on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+                make main_doc_list, optional on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+
+            } else {
+                make client_email, editable on nova_uloha when { true }
+                make client_email, required on nova_uloha when { true }
+
+                make identifier, editable on nova_uloha when { true }
+                make identifier, required on nova_uloha when { true }
+
+                make review_note, editable on nova_uloha when { review_note.value != null }
+                make review_note, optional on nova_uloha when { review_note.value != null }
+
+                make further_processing, editable on nova_uloha when { true }
+                make further_processing, required on nova_uloha when { true }
+
+                make resolved_without_review_cause, editable on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+                make resolved_without_review_cause, optional on nova_uloha when { further_processing.value == "Vyriešiť bez kontroly" }
+
+                make controller, editable on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+                make controller, required on nova_uloha when { further_processing.value == "Poslať na kontrolu" }
+
+                make is_attachment, editable on nova_uloha when { true }
+                make is_attachment, required on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+                make is_attachment, optional on nova_uloha when { further_processing.value != "Označiť ako prílohu k hlavnému dokumentu" }
+
+                make main_doc_list, editable on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+                make main_doc_list, required on nova_uloha when { further_processing.value == "Označiť ako prílohu k hlavnému dokumentu" }
+            }
+            <!-- @formatter:on-->
+        </action>
+        <action trigger="set">
+            <!-- @formatter:off -->
+			history: f.history,
+			suspension: f.suspension;
+
+			String message;
+			if (suspension.value?.defaultValue == "Pozastaviť") {
+				try {
+					message = " používateľ " + userService.loggedUser.fullName + " pozastavil úlohu"
+				} catch (Exception e) {
+					message = " Systém pozastavil úlohu"
+				}
+			} else if (suspension.value?.defaultValue == "Obnoviť") {
+				try {
+					message = " používateľ " + userService.loggedUser.fullName + " obnovil úlohu"
+				} catch (Exception e) {
+					message = " Systém obnovil úlohu"
+				}
+			}
+
+			String line = new Date().format('dd.MM.yyyy HH:mm') + message
+            change history value { return history.value ? (history.value + "\n" + line) : line }
+			<!-- @formatter:on -->
+        </action>
+    </data>
+    <data type="text">
+        <id>suspension_note</id>
+        <title>Poznámka k pozastaveniu</title>
+        <values>area</values>
+        <length>1950</length>
+    </data>
+    <data type="date">
+        <id>suspension_date</id>
+        <title>Dátum pozastavenia</title>
+    </data>
+    <data type="user">
+        <id>suspended_by</id>
+        <title>Pozastavil</title>
+    </data>
+    <data type="boolean">
+        <id>is_attachment</id>
+        <title>Je príloha k dokumentu?</title>
+        <init>false</init>
+    </data>
+    <data type="multichoice">
+        <id>main_doc_list</id>
+        <title>Spárovanie s hlavným dokumentom</title>
+    </data>
+    <data type="text">
+        <id>history</id>
+        <title>História</title>
+        <values>area</values>
+    </data>
+    <data type="boolean">
+        <id>review_approved</id>
+        <title>Schváliť</title>
+        <init>true</init>
+        <action trigger="set">
+            <!-- @formatter:off -->
+            review_approved: f.review_approved,
+            review_allow_route: f.1021,
+            review_reject_route: f.1031;
+
+            change review_allow_route value { return review_approved.value ? 1 : 0 }
+            change review_reject_route value { return !review_approved.value ? 1 : 0 }
+            <!-- @formatter:on -->
+        </action>
+    </data>
+    <data type="enumeration" immediate="true">
+        <id>case_priority</id>
+        <title>Priorita prípadu</title>
+        <values>vysoká</values>
+        <values>stredná</values>
+        <values>nízka</values>
+        <init>nízka</init>
+    </data>
+	<data type="user">
+		<id>approved_by</id>
+		<title>Kontrolór</title>
+		<desc>kontrolór, ktorý schválil úlohu</desc>
+	</data>
+
+    <!-- TRANSITIONS -->
+    <transition>
+        <id>4</id>
+        <x>420</x>
+        <y>420</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Nová úloha</label>
+        <icon>assignment_late</icon>
+        <priority>1</priority>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <dataGroup>
+            <id>nova_uloha</id>
+            <layout>legacy</layout>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>case_priority</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>status</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>channel</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>client_email</id>
+                <logic>
+                    <behavior>editable</behavior>
+                    <behavior>required</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>identifier</id>
+                <logic>
+                    <behavior>editable</behavior>
+                    <behavior>required</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>3</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>review_note</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                    <action trigger="get">
+                        <!-- @formatter:off -->
+                        review_note: f.review_note,
+                        nova_uloha: t.4;
+
+                        if (review_note.value != null &amp;&amp; review_note.value != "") {
+                            make review_note, visible on nova_uloha when { true }
+                            make review_note, optional on nova_uloha when { true }
+                        } else {
+                            make review_note, hidden on nova_uloha when { true }
+                            make review_note, optional on nova_uloha when { true }
+                        }
+                        <!-- @formatter:on -->
+                    </action>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>4</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>further_processing</id>
+                <logic>
+                    <behavior>editable</behavior>
+                    <behavior>required</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>3</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>resolved_without_review_cause</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>4</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>controller</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>5</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>netgrif</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>suspension</id>
+                <logic>
+                    <behavior>editable</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>6</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>suspension_note</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>5</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>suspension_date</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>6</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>suspended_by</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>7</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>netgrif</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>is_attachment</id>
+                <logic>
+                    <behavior>editable</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>8</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>netgrif</template>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>main_doc_list</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>9</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>history</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>7</y>
+                    <rows>3</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+
+        <event type="assign">
+            <id>assign_33_0</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history;
+
+                    String message
+                    String taskType = "si priradil úlohu [Nová úloha]"
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_4</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history;
+
+                    String message
+                    String taskType = "zrušil úlohu [Nová úloha]"
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_4</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    further_processing: f.further_processing;
+
+                    def task = null
+                    try {
+                        if (further_processing.value == "Označiť ako duplicitu") {
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("20") })
+                        } else if (further_processing.value == "Vyriešiť bez kontroly") {
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("19") })
+                        } else if (further_processing.value == "Presun na iné oddelenie") {
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("8") })
+                        }  else if (further_processing.value == "Skartovať") {
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("22") })
+                        } else if (further_processing.value == "Vyžiadať dokument"){
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("23") })
+                        } else if (further_processing.value == "Označiť ako prílohu k hlavnému dokumentu"){
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("21") })
+                        } else {
+                            throw new IllegalArgumentException("Žiadna z možností ďaľšieho spracovania nebola vybraná.")
+                        }
+
+                        if (task != null) {
+                            taskService.assignTask(userService.loggedOrSystem.transformToLoggedUser(), task.stringId)
+                            taskService.finishTask(userService.loggedOrSystem.transformToLoggedUser(), task.stringId)
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to progress FAQ task", e)
+                    }
+                    <!-- @formatter:on -->
+                </action>
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history,
+                    further_processing: f.further_processing;
+
+                    String message
+                    String taskType = "ukončil úlohu [Nová úloha] s ďalším spracovaním: " + further_processing.value as String
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+                <action>
+                    <!-- @formatter:off -->
+                    status: f.status,
+                    further_processing: f.further_processing,
+                    controller: f.controller;
+
+                    <!-- TODO: assign the control task to the selected controller -->
+                    if (further_processing.value == "Poslať na kontrolu") {
+                        change status value { "Kontrola" }
+<!--                        if (controller.value) {-->
+<!--                            def task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("13") })-->
+<!--                            if (task != null) {-->
+<!--                                taskService.assignTask(task, controller.value)-->
+<!--                            }-->
+<!--                        }-->
+                    }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>8</id>
+        <x>421</x>
+        <y>503</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Presun na iné oddelenie</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_8</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_8</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_8</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>13</id>
+        <x>525</x>
+        <y>249</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Kontrola</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>kontrolor</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <dataGroup>
+            <id>kontrola</id>
+            <layout>legacy</layout>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>channel</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>identifier</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>history</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>4</y>
+                    <rows>2</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>review_note</id>
+                <logic>
+                    <behavior>editable</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>3</y>
+                    <rows>2</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>review_approved</id>
+                <logic>
+                    <behavior>editable</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>3</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>client_email</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>status</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+
+        <event type="assign">
+            <id>assign_33_0</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history;
+
+                    String message
+                    String taskType = "si priradil úlohu [Kontrola]"
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_33_0</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history;
+
+                    String message
+                    String taskType = "zrušil úlohu [Kontrola]"
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_33_0</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+                    review_approved: f.review_approved,
+                    status: f.status,
+                    history: f.history;
+
+                    String message
+                    String taskType = "ukončil úlohu [Kontrola]"
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    change status value { return review_approved.value ? "Vyriešená s kontrolou" : "Nová úloha" }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>16</id>
+        <x>525</x>
+        <y>64</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyriešená s kontrolou</label>
+        <icon>assignment_turned_in</icon>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+		<dataGroup>
+			<id>vyriesena_s_kontrolou</id>
+			<layout>legacy</layout>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+			<dataRef>
+				<id>email_data</id>
+				<logic>
+					<behavior>hidden</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>0</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>case_priority</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>status</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>1</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>identifier</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>3</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>client_email</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>channel</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>review_note</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>3</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>history</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>4</y>
+					<rows>3</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+			<dataRef>
+				<id>approved_by</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>2</x>
+					<y>5</y>
+					<rows>1</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>netgrif</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+        <event type="assign">
+            <id>assign_16</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_16</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_16</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_16</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>19</id>
+        <x>718</x>
+        <y>250</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyriešiť bez kontroly</label>
+        <roleRef>
+            <id>system</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <event type="finish">
+            <id>finish_19</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					status: f.status;
+
+					change status value { "Vyriešená bez kontroly" }
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>20</id>
+        <x>719</x>
+        <y>324</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Označiť ako duplicitu</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_20</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_20</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_20</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_20</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>21</id>
+        <x>717</x>
+        <y>420</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Označiť ako prílohu</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_21</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_21</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_21</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_21</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>22</id>
+        <x>721</x>
+        <y>511</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Skartovať</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_22</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_22</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_22</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_22</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					status: f.status;
+
+					change status value { "Skartovaná" }
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>23</id>
+        <x>725</x>
+        <y>580</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyžiadať dokument</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_23</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_23</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_23</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_23</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>35</id>
+        <x>919</x>
+        <y>580</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Čakanie na prílohy</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_35</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_35</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_35</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_35</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>37</id>
+        <x>917</x>
+        <y>510</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Skartovaná úloha</label>
+        <icon>remove_circle</icon>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <dataGroup>
+            <id>skartovana_uloha</id>
+            <layout>legacy</layout>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>channel</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>identifier</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>client_email</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>status</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>history</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>3</y>
+                    <rows>2</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+
+        <event type="assign">
+            <id>assign_37</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_37</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_37</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_37</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>39</id>
+        <x>911</x>
+        <y>420</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Príloha k hlavnému dokumentu</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_39</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_39</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_39</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_39</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>41</id>
+        <x>715</x>
+        <y>63</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyriešená bez kontroly</label>
+        <icon>assignment_turned_in</icon>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>kontrolor</id>
+            <logic>
+                <view>true</view>
+            </logic>
+        </roleRef>
+        <dataGroup>
+            <id>vyriesena_bez_kontroly</id>
+            <layout>legacy</layout>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>case_priority</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>client_email</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+					<x>2</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>identifier</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+					<x>0</x>
+					<y>3</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>channel</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+					<y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>status</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+					<y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>resolved_without_review_cause</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+					<x>2</x>
+                    <y>3</y>
+					<rows>3</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>history</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+					<x>0</x>
+					<y>4</y>
+                    <rows>2</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+
+        <event type="assign">
+            <id>assign_41</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_41</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_41</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_41</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>43</id>
+        <x>908</x>
+        <y>325</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Duplicitný dokument</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+        <dataGroup>
+            <id>duplicitny_dokument</id>
+            <layout>layout</layout>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>channel</id>
+                <logic>
+                    <behavior>editable</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>identifier</id>
+                <logic>
+                    <behavior>editable</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>1</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>client_email</id>
+                <logic>
+                    <behavior>editable</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>status</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>2</x>
+                    <y>2</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+            <dataRef>
+                <id>history</id>
+                <logic>
+                    <behavior>visible</behavior>
+                    <behavior>optional</behavior>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>3</y>
+                    <rows>2</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+
+        <event type="assign">
+            <id>assign_43</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_43</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_43</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_43</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>56</id>
+        <x>721</x>
+        <y>687</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyžiadaný dokument bol prijatý</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_56</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_56</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_56</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_56</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>57</id>
+        <x>918</x>
+        <y>685</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Vyžiadaný dokument nebol prijatý</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_57</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_57</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_57</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_57</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>62</id>
+        <x>1161</x>
+        <y>685</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Klient nereaguje</label>
+        <roleRef>
+            <id>admin</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_62</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_62</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_62</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_62</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+    <transition>
+        <id>70</id>
+        <x>1368</x>
+        <y>684</y>
+        <layout>
+            <offset>0</offset>
+        </layout>
+        <label>Reklamácia</label>
+        <roleRef>
+            <id>system</id>
+            <logic>
+                <perform>true</perform>
+            </logic>
+        </roleRef>
+
+        <event type="assign">
+            <id>assign_70</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="cancel">
+            <id>cancel_70</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="delegate">
+            <id>delegate_70</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+        <event type="finish">
+            <id>finish_70</id>
+            <actions phase="post">
+                <action>
+                    <!-- @formatter:off -->
+					status: f.status;
+
+					change status value { "Reklamovaná" }
+					<!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
+    </transition>
+
+    <!-- PLACES -->
+    <place>
+        <id>3</id>
+        <x>300</x>
+        <y>420</y>
+        <label>Nová úloha</label>
+        <tokens>1</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>6</id>
+        <x>527</x>
+        <y>420</y>
+        <label>Ďalšie spracovanie</label>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>11</id>
+        <x>525</x>
+        <y>331</y>
+        <label>Odoslaná na kontrolu</label>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>15</id>
+        <x>525</x>
+        <y>155</y>
+        <label>Vyriešená s kontrolou</label>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>34</id>
+        <x>819</x>
+        <y>580</y>
+        <label/>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>36</id>
+        <x>818</x>
+        <y>511</y>
+        <label/>>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>38</id>
+        <x>817</x>
+        <y>420</y>
+        <label/>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>40</id>
+        <x>716</x>
+        <y>156</y>
+        <label>Vyriešená bez kontroly</label>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>42</id>
+        <x>814</x>
+        <y>325</y>
+        <label/>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>61</id>
+        <x>1056</x>
+        <y>685</y>
+        <label/>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+    <place>
+        <id>69</id>
+        <x>1256</x>
+        <y>685</y>
+        <label/>
+        <tokens>0</tokens>
+        <static>false</static>
+    </place>
+
+    <!-- ARCS -->
+    <arc>
+        <id>5</id>
+        <type>regular</type>
+        <sourceId>3</sourceId>
+        <destinationId>4</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>7</id>
+        <type>variable</type>
+        <sourceId>4</sourceId>
+        <destinationId>6</destinationId>
+        <multiplicity>1009</multiplicity>
+    </arc>
+    <arc>
+        <id>9</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>8</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>527</x>
+            <y>503</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>10</id>
+        <type>regular</type>
+        <sourceId>8</sourceId>
+        <destinationId>3</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>298</x>
+            <y>503</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>12</id>
+        <type>variable</type>
+        <sourceId>4</sourceId>
+        <destinationId>11</destinationId>
+        <multiplicity>1013</multiplicity>
+        <breakPoint>
+            <x>420</x>
+            <y>331</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>14</id>
+        <type>regular</type>
+        <sourceId>11</sourceId>
+        <destinationId>13</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>17</id>
+        <type>read</type>
+        <sourceId>15</sourceId>
+        <destinationId>16</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>18</id>
+        <type>variable</type>
+        <sourceId>13</sourceId>
+        <destinationId>15</destinationId>
+        <multiplicity>1021</multiplicity>
+    </arc>
+    <arc>
+        <id>29</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>19</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>609</x>
+            <y>420</y>
+        </breakPoint>
+        <breakPoint>
+            <x>609</x>
+            <y>250</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>30</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>20</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>608</x>
+            <y>421</y>
+        </breakPoint>
+        <breakPoint>
+            <x>609</x>
+            <y>324</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>31</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>21</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>32</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>22</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>608</x>
+            <y>420</y>
+        </breakPoint>
+        <breakPoint>
+            <x>608</x>
+            <y>511</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>33</id>
+        <type>regular</type>
+        <sourceId>6</sourceId>
+        <destinationId>23</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>608</x>
+            <y>420</y>
+        </breakPoint>
+        <breakPoint>
+            <x>608</x>
+            <y>578</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>44</id>
+        <type>read</type>
+        <sourceId>42</sourceId>
+        <destinationId>43</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>45</id>
+        <type>read</type>
+        <sourceId>38</sourceId>
+        <destinationId>39</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>46</id>
+        <type>read</type>
+        <sourceId>34</sourceId>
+        <destinationId>35</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>47</id>
+        <type>regular</type>
+        <sourceId>20</sourceId>
+        <destinationId>42</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>48</id>
+        <type>regular</type>
+        <sourceId>21</sourceId>
+        <destinationId>38</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>49</id>
+        <type>regular</type>
+        <sourceId>22</sourceId>
+        <destinationId>36</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>51</id>
+        <type>read</type>
+        <sourceId>36</sourceId>
+        <destinationId>37</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>52</id>
+        <type>read</type>
+        <sourceId>40</sourceId>
+        <destinationId>41</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>53</id>
+        <type>regular</type>
+        <sourceId>19</sourceId>
+        <destinationId>40</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>54</id>
+        <type>variable</type>
+        <sourceId>13</sourceId>
+        <destinationId>3</destinationId>
+        <multiplicity>1031</multiplicity>
+        <breakPoint>
+            <x>300</x>
+            <y>249</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>55</id>
+        <type>regular</type>
+        <sourceId>23</sourceId>
+        <destinationId>34</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>60</id>
+        <type>regular</type>
+        <sourceId>56</sourceId>
+        <destinationId>3</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>295</x>
+            <y>686</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>63</id>
+        <type>regular</type>
+        <sourceId>57</sourceId>
+        <destinationId>61</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>64</id>
+        <type>regular</type>
+        <sourceId>61</sourceId>
+        <destinationId>62</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>71</id>
+        <type>regular</type>
+        <sourceId>62</sourceId>
+        <destinationId>69</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>72</id>
+        <type>regular</type>
+        <sourceId>69</sourceId>
+        <destinationId>70</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>73</id>
+        <type>reset</type>
+        <sourceId>40</sourceId>
+        <destinationId>70</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>1367</x>
+            <y>155</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>74</id>
+        <type>reset</type>
+        <sourceId>15</sourceId>
+        <destinationId>70</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>579</x>
+            <y>154</y>
+        </breakPoint>
+        <breakPoint>
+            <x>617</x>
+            <y>154</y>
+        </breakPoint>
+        <breakPoint>
+            <x>618</x>
+            <y>21</y>
+        </breakPoint>
+        <breakPoint>
+            <x>1366</x>
+            <y>21</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>75</id>
+        <type>regular</type>
+        <sourceId>19</sourceId>
+        <destinationId>69</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>1257</x>
+            <y>250</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>76</id>
+        <type>regular</type>
+        <sourceId>13</sourceId>
+        <destinationId>69</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>588</x>
+            <y>249</y>
+        </breakPoint>
+        <breakPoint>
+            <x>616</x>
+            <y>219</y>
+        </breakPoint>
+        <breakPoint>
+            <x>619</x>
+            <y>21</y>
+        </breakPoint>
+        <breakPoint>
+            <x>1257</x>
+            <y>20</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>77</id>
+        <type>regular</type>
+        <sourceId>70</sourceId>
+        <destinationId>3</destinationId>
+        <multiplicity>1</multiplicity>
+        <breakPoint>
+            <x>1370</x>
+            <y>777</y>
+        </breakPoint>
+        <breakPoint>
+            <x>294</x>
+            <y>774</y>
+        </breakPoint>
+    </arc>
+    <arc>
+        <id>78</id>
+        <type>regular</type>
+        <sourceId>34</sourceId>
+        <destinationId>57</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+    <arc>
+        <id>79</id>
+        <type>regular</type>
+        <sourceId>34</sourceId>
+        <destinationId>56</destinationId>
+        <multiplicity>1</multiplicity>
+    </arc>
+</document>
