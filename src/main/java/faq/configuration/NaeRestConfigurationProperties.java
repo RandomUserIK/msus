@@ -25,6 +25,8 @@ public class NaeRestConfigurationProperties {
 
     private String taskSetDataPath;
 
+    private String searchTaskPath;
+
     private String petrinetGetAllProcessesPath;
 
 }

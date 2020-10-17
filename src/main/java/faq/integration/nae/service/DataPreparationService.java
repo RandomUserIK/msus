@@ -2,6 +2,7 @@ package faq.integration.nae.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import faq.integration.nae.models.CreateCaseBody;
 import faq.integration.nae.service.interfaces.IDataPreparationService;
 import groovy.json.JsonOutput;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,15 @@ public class DataPreparationService implements IDataPreparationService {
             log.error("Dataset cannot be populated. " + e.getMessage(), e);
             throw new IllegalStateException(e.getMessage());
         }
+    }
+
+    @Override
+    public CreateCaseBody createCaseBody(String title, String color, String processIdentifier) {
+        CreateCaseBody caseBody = new CreateCaseBody();
+        caseBody.setTitle(title);
+        caseBody.setColor(color);
+        caseBody.setNetId(processIdentifier);
+        return caseBody;
     }
 
 }
