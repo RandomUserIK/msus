@@ -39,11 +39,7 @@ public class DataPreparationService implements IDataPreparationService {
 
     @Override
     public CreateCaseBody createCaseBody(String title, String color, String processIdentifier) {
-        CreateCaseBody caseBody = new CreateCaseBody();
-        caseBody.setTitle(title);
-        caseBody.setColor(color);
-        caseBody.setNetId(processIdentifier);
-        return caseBody;
+        return new CreateCaseBody(title, color, processIdentifier);
     }
 
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import faq.configuration.NaeRestConfigurationProperties;
 import faq.integration.nae.domain.throwable.InitPetriNetIdsException;
 import faq.integration.nae.models.CreateCaseBody;
+import faq.integration.nae.models.PetriNetDataHolder;
 import faq.integration.nae.models.TaskSearchCaseRequest;
 import faq.integration.nae.models.TaskSearchRequestWrapper;
 import faq.integration.nae.service.interfaces.IDataPreparationService;
@@ -29,19 +30,13 @@ import java.util.Map;
 public class NaeRestClient implements INaeRestClient {
 
     private static final String IDENTIFIER_PROPERTY = "identifier";
+    private static final String STRING_ID_PROPERTY = "stringId";
     private static final String EMBEDDED_PROPERTY = "_embedded";
     private static final String PETRI_NET_REFERENCES_PROPERTY = "petriNetReferences";
 
     private HttpHeaders naeHttpHeaders;
 
-    @Getter
-    private String faqPetriNetId;
-
-    @Getter
-    private String emailDataPetriNetId;
-
-    @Getter
-    private String ticketDataPetriNetId;
+    private PetriNetDataHolder netDataHolder;
 
     @Autowired
     private NaeRestConfigurationProperties naeRestConfigurationProperties;
@@ -55,14 +50,16 @@ public class NaeRestClient implements INaeRestClient {
     @PostConstruct
     private void initNaeAuthHeaders() {
         naeHttpHeaders = makeAuthHeaders();
+        netDataHolder = new PetriNetDataHolder();
         initPetriNetIds();
+        log.info("stop");
     }
 
     @Override
     public ObjectNode findTaskByCaseAndTransition(String naeCaseId, String naeTransId) {
         TaskSearchRequestWrapper taskSearchRequest = new TaskSearchRequestWrapper();
         taskSearchRequest.setUseCase(Collections.singletonList(new TaskSearchCaseRequest(naeCaseId, null)));
-        taskSearchRequest.setNaeTransitionId(Collections.singletonList(naeTransId));
+        taskSearchRequest.setTransitionId(Collections.singletonList(naeTransId));
         return searchTasks(taskSearchRequest);
     }
 
@@ -153,15 +150,19 @@ public class NaeRestClient implements INaeRestClient {
 
             JsonNode netReferences = netNode.get(PETRI_NET_REFERENCES_PROPERTY);
             netReferences.elements().forEachRemaining(netReference -> {
-                if (netReference.get(IDENTIFIER_PROPERTY) == null)
+                if (netReference.get(IDENTIFIER_PROPERTY) == null || netReference.get(STRING_ID_PROPERTY) == null)
                     return;
 
-                if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq"))
-                    faqPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
-                else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("email_data"))
-                    emailDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
-                else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("ticket_data"))
-                    ticketDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
+                if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq")) {
+                    netDataHolder.setFaqPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
+                    netDataHolder.setFaqPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
+                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("email_data")) {
+                    netDataHolder.setEmailDataPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
+                    netDataHolder.setEmailDataPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
+                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("ticket_data")) {
+                    netDataHolder.setTicketDataPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
+                    netDataHolder.setTicketDataPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
+                }
             });
         });
     }

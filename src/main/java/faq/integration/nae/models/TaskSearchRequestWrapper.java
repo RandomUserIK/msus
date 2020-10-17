@@ -1,5 +1,6 @@
 package faq.integration.nae.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -7,10 +8,18 @@ import java.util.List;
 @Data
 public class TaskSearchRequestWrapper {
 
-    private String naeCaseId;
+    @JsonProperty("case")
+    public List<TaskSearchCaseRequest> useCase;
 
-    private List<String> naeTransitionId;
+    public List<String> title;
 
-    private List<TaskSearchCaseRequest> useCase;
+    public List<Long> user;
 
+    public List<String> process;
+
+    public List<String> transitionId;
+
+    public String fullText;
+
+    public List<String> group;
 }
