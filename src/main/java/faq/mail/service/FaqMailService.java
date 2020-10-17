@@ -1,5 +1,7 @@
 package faq.mail.service;
 
+import faq.integration.nae.service.NaeRestClient;
+import faq.integration.nae.service.interfaces.IDataPreparationService;
 import faq.mail.domain.throwable.FaqMailProcessingException;
 import faq.mail.service.interfaces.IFaqMailParser;
 import faq.mail.service.interfaces.IFaqMailService;
@@ -27,6 +29,12 @@ public class FaqMailService implements IFaqMailService {
 
     @Autowired
     private IFaqMailParser faqMailParser;
+
+    @Autowired
+    private IDataPreparationService dataPreparationService;
+
+    @Autowired
+    private NaeRestClient naeRestClient;
 
     @Override
     public void processEmail(Message mailMessage) {
