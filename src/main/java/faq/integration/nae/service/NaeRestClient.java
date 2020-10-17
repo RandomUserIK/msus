@@ -79,14 +79,15 @@ public class NaeRestClient implements INaeRestClient {
 
             JsonNode netReferences = netNode.get(PETRI_NET_REFERENCES_PROPERTY);
             netReferences.elements().forEachRemaining(netReference -> {
-                if (netReference.get(IDENTIFIER_PROPERTY) != null) {
-                    if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq"))
-                        faqPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
-                    else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("email_data"))
-                        emailDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
-                    else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("ticket_data"))
-                        ticketDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
-                }
+                if (netReference.get(IDENTIFIER_PROPERTY) == null)
+                    return;
+
+                if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq"))
+                    faqPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
+                else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("email_data"))
+                    emailDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
+                else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("ticket_data"))
+                    ticketDataPetriNetId = netReference.get(IDENTIFIER_PROPERTY).asText();
             });
         });
     }
