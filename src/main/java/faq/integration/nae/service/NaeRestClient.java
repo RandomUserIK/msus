@@ -52,7 +52,6 @@ public class NaeRestClient implements INaeRestClient {
         naeHttpHeaders = makeAuthHeaders();
         netDataHolder = new PetriNetDataHolder();
         initPetriNetIds();
-        log.info("stop");
     }
 
     @Override
