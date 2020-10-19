@@ -48,7 +48,7 @@ public class NaeRestClient implements INaeRestClient {
     private RestTemplate restTemplate;
 
     @PostConstruct
-    private void initNaeAuthHeaders() {
+    private void init() {
         naeHttpHeaders = makeAuthHeaders();
         netDataHolder = new PetriNetDataHolder();
         initPetriNetIds();
