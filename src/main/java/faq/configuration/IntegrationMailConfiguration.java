@@ -10,8 +10,8 @@ import org.springframework.integration.mail.ImapMailReceiver;
 
 import java.util.Properties;
 
-// @EnableIntegration
-// @Configuration
+@EnableIntegration
+@Configuration
 public class IntegrationMailConfiguration {
 
     @Value("${faq.mail.imap.server.url}")

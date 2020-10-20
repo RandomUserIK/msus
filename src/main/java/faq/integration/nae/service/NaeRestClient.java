@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
-@Service
+ @Service
 public class NaeRestClient implements INaeRestClient {
 
     private static final String IDENTIFIER_PROPERTY = "identifier";
@@ -36,6 +36,7 @@ public class NaeRestClient implements INaeRestClient {
 
     private HttpHeaders naeHttpHeaders;
 
+    @Getter
     private PetriNetDataHolder netDataHolder;
 
     @Autowired

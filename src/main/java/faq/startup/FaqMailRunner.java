@@ -12,7 +12,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-// @Component
+@Component
 public class FaqMailRunner implements CommandLineRunner {
 
     @Autowired
@@ -23,7 +23,7 @@ public class FaqMailRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if(imapIdleChannelAdapter == null && imapIdleChannelAdapter.getOutputChannel() == null)
+        if(imapIdleChannelAdapter == null || imapIdleChannelAdapter.getOutputChannel() == null)
             return;
 
         ((DirectChannel) imapIdleChannelAdapter.getOutputChannel()).subscribe(new MessageHandler() {
