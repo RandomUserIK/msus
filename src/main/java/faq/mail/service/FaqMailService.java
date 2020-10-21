@@ -55,7 +55,7 @@ public class FaqMailService implements IFaqMailService {
             emailData.setDateReceived(DateFormatUtils.format(mailMessage.getReceivedDate(), "dd.MM.yyyy"));
             emailData.setAttachments(faqMailParser.getMultipart(mailMessage, storagePath + "/"));
 
-//            createEmailCaseInNae(emailData);
+            createEmailCaseInNae(emailData);
         } catch (MessagingException | IOException ex) {
             log.error("E-mail processing failed", ex);
             throw new FaqMailProcessingException("E-mail processing, which was received from: " + emailData.getReceivedFrom() + " failed");
@@ -64,23 +64,30 @@ public class FaqMailService implements IFaqMailService {
 
     private void createEmailCaseInNae(EmailData emailData) {
         String faqCaseId = extractStringId(naeRestClient.createCase(
-                dataPreparationService.createCaseBody("FAQ", "", naeRestClient.getNetDataHolder().getFaqPetriNetId())));
+                dataPreparationService.createCaseBody("FAQ", "", naeRestClient.getNetDataHolder().getFaqPetriNetStringId())), false);
         String emailCaseId = extractStringId(naeRestClient.createCase(
-                dataPreparationService.createCaseBody("FAQ", "", naeRestClient.getNetDataHolder().getEmailDataPetriNetId())));
+                dataPreparationService.createCaseBody("E-mail", "", naeRestClient.getNetDataHolder().getEmailDataPetriNetStringId())), false);
 
-        String faqNovaUlohaTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(faqCaseId, "3"));
-        String emailTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "2"));
+        String faqNovaUlohaTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(faqCaseId, "4"), true);
+        String emailTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "2"), true);
 
         naeRestClient.assignTask(faqNovaUlohaTaskId);
         naeRestClient.assignTask(emailTaskId);
 
-        Map<String, Map<String, Object>> dataSet = prepareEmailData(emailData);
+        Map<String, Map<String, Object>> dataSet = prepareEmailData(emailData, emailTaskId);
 
         naeRestClient.setData(emailTaskId, dataSet);
-        System.out.println("tmp");
+
+        try {
+            if (!emailData.getAttachments().isEmpty())
+                naeRestClient.saveFile(emailTaskId, "attachments",
+                        zipAttachments(storagePath + "/" + emailTaskId + ".zip", emailData.getAttachments()).getFile());
+        } catch (IOException ex) {
+            log.error("Failed to put attachments into the dataSet", ex);
+        }
     }
 
-    private Map<String, Map<String, Object>> prepareEmailData(EmailData emailData) {
+    private Map<String, Map<String, Object>> prepareEmailData(EmailData emailData, String emailTaskId) {
         Map<String, Map<String, Object>> dataSet = new LinkedHashMap<>();
         dataSet.put("faq_parent_mongo_id", dataPreparationService.makeDataSetEntry("text", emailData.getFaqParentMongoId()));
         dataSet.put("client_email", dataPreparationService.makeDataSetEntry("text", emailData.getReceivedFrom()));
@@ -91,8 +98,8 @@ public class FaqMailService implements IFaqMailService {
         return dataSet;
     }
 
-    private String extractStringId(ObjectNode naeResponse) {
-        return naeResponse.get(STRING_ID).asText();
+    private String extractStringId(ObjectNode naeResponse, boolean isTaskSearch) {
+        return isTaskSearch ? naeResponse.get("_embedded").get("tasks").get(0).get(STRING_ID).asText() : naeResponse.get(STRING_ID).asText();
     }
 
     private ZipFile zipAttachments(String zipFilePath, List<File> attachments) throws ZipException {
