@@ -26,8 +26,6 @@ import java.util.*;
 @Service
 public class FaqMailService implements IFaqMailService {
 
-    private static final String STRING_ID = "stringId";
-
     @Value("${storage.path}")
     private String storagePath;
 
@@ -63,13 +61,13 @@ public class FaqMailService implements IFaqMailService {
     }
 
     private void createEmailCaseInNae(EmailData emailData) {
-        String faqCaseId = extractStringId(naeRestClient.createCase(
+        String faqCaseId = dataPreparationService.extractStringId(naeRestClient.createCase(
                 dataPreparationService.createCaseBody("FAQ", "", naeRestClient.getNetDataHolder().getFaqPetriNetStringId())), false);
-        String emailCaseId = extractStringId(naeRestClient.createCase(
+        String emailCaseId = dataPreparationService.extractStringId(naeRestClient.createCase(
                 dataPreparationService.createCaseBody("E-mail", "", naeRestClient.getNetDataHolder().getEmailDataPetriNetStringId())), false);
 
-        String faqNovaUlohaTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(faqCaseId, "4"), true);
-        String emailTaskId = extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "2"), true);
+        String faqNovaUlohaTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(faqCaseId, "4"), true);
+        String emailTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "2"), true);
 
         naeRestClient.assignTask(faqNovaUlohaTaskId);
         naeRestClient.assignTask(emailTaskId);
@@ -96,10 +94,6 @@ public class FaqMailService implements IFaqMailService {
         dataSet.put("sent_date", dataPreparationService.makeDataSetEntry("text", emailData.getDateSent()));
         dataSet.put("received_date", dataPreparationService.makeDataSetEntry("text", emailData.getDateReceived()));
         return dataSet;
-    }
-
-    private String extractStringId(ObjectNode naeResponse, boolean isTaskSearch) {
-        return isTaskSearch ? naeResponse.get("_embedded").get("tasks").get(0).get(STRING_ID).asText() : naeResponse.get(STRING_ID).asText();
     }
 
     private ZipFile zipAttachments(String zipFilePath, List<File> attachments) throws ZipException {

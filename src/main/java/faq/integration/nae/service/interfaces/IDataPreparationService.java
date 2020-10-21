@@ -13,4 +13,5 @@ public interface IDataPreparationService {
 
     CreateCaseBody createCaseBody(String title, String color, String processIdentifier);
 
+    String extractStringId(ObjectNode naeResponse, boolean isTaskSearch);
 }

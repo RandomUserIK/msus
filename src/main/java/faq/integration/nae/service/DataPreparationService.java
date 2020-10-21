@@ -16,6 +16,8 @@ import java.util.Map;
 @Service
 public class DataPreparationService implements IDataPreparationService {
 
+    private static final String STRING_ID = "stringId";
+
     @Override
     public Map<String, Object> makeDataSetEntry(String type, Object value) {
         Map<String, Object> fieldMap = new HashMap<>();
@@ -41,4 +43,8 @@ public class DataPreparationService implements IDataPreparationService {
         return new CreateCaseBody(title, color, processIdentifier);
     }
 
+    @Override
+    public String extractStringId(ObjectNode naeResponse, boolean isTaskSearch) {
+        return isTaskSearch ? naeResponse.get("_embedded").get("tasks").get(0).get(STRING_ID).asText() : naeResponse.get(STRING_ID).asText();
+    }
 }
