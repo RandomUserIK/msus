@@ -21,6 +21,8 @@ public class NaeRestConfigurationProperties {
 
     private String finishTaskPath;
 
+    private String cancelTaskPath;
+
     private String taskSaveFilePath;
 
     private String taskSetDataPath;

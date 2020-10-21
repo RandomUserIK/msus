@@ -1,8 +1,8 @@
 package faq.mail.service;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import faq.integration.nae.service.NaeRestClient;
 import faq.integration.nae.service.interfaces.IDataPreparationService;
+import faq.integration.nae.service.interfaces.INaeRestClient;
 import faq.mail.domain.throwable.FaqMailProcessingException;
 import faq.mail.models.EmailData;
 import faq.mail.service.interfaces.IFaqMailParser;
@@ -20,7 +20,10 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -71,9 +74,11 @@ public class FaqMailService implements IFaqMailService {
 
         naeRestClient.assignTask(faqNovaUlohaTaskId);
         naeRestClient.assignTask(emailTaskId);
+        naeRestClient.finishTask(emailTaskId);
 
-        Map<String, Map<String, Object>> dataSet = prepareEmailData(emailData, emailTaskId);
+        emailTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "5"), true);
 
+        Map<String, Map<String, Object>> dataSet = prepareEmailData(emailData);
         naeRestClient.setData(emailTaskId, dataSet);
 
         try {
@@ -83,9 +88,18 @@ public class FaqMailService implements IFaqMailService {
         } catch (IOException ex) {
             log.error("Failed to put attachments into the dataSet", ex);
         }
+
+        dataSet.clear();
+        dataSet.put("channel", dataPreparationService.makeDataSetEntry("text", "E-mail"));
+        dataSet.put("email_data", dataPreparationService.makeDataSetEntry("taskRef", Collections.singletonList(emailTaskId)));
+        naeRestClient.setData(faqNovaUlohaTaskId, dataSet);
+
+        naeRestClient.assignTask(emailTaskId);
+        naeRestClient.finishTask(emailTaskId);
+        naeRestClient.cancelTask(faqNovaUlohaTaskId);
     }
 
-    private Map<String, Map<String, Object>> prepareEmailData(EmailData emailData, String emailTaskId) {
+    private Map<String, Map<String, Object>> prepareEmailData(EmailData emailData) {
         Map<String, Map<String, Object>> dataSet = new LinkedHashMap<>();
         dataSet.put("faq_parent_mongo_id", dataPreparationService.makeDataSetEntry("text", emailData.getFaqParentMongoId()));
         dataSet.put("client_email", dataPreparationService.makeDataSetEntry("text", emailData.getReceivedFrom()));

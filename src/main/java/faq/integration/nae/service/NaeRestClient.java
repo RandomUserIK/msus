@@ -90,6 +90,15 @@ public class NaeRestClient implements INaeRestClient {
     }
 
     @Override
+    public ObjectNode cancelTask(String taskId) {
+        String url = naeRestConfigurationProperties.getHost() +
+                naeRestConfigurationProperties.getCancelTaskPath().replace("{id}", taskId);
+        HttpEntity entity = new HttpEntity<>(naeHttpHeaders);
+        ResponseEntity<ObjectNode> response = restTemplate.exchange(url, HttpMethod.GET, entity, ObjectNode.class);
+        return response.getBody();
+    }
+
+    @Override
     public ObjectNode setData(String taskId, Map<String, Map<String, Object>> data) {
         String url = naeRestConfigurationProperties.getHost() +
                      naeRestConfigurationProperties.getTaskSetDataPath().replace("{id}", taskId);
@@ -153,15 +162,18 @@ public class NaeRestClient implements INaeRestClient {
                 if (netReference.get(IDENTIFIER_PROPERTY) == null || netReference.get(STRING_ID_PROPERTY) == null)
                     return;
 
-                if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq")) {
+                if (netReference.get(IDENTIFIER_PROPERTY).asText().endsWith("_faq")) {
                     netDataHolder.setFaqPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
                     netDataHolder.setFaqPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
-                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("email_data")) {
+                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq_email_data")) {
                     netDataHolder.setEmailDataPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
                     netDataHolder.setEmailDataPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
-                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("ticket_data")) {
+                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq_ticket_data")) {
                     netDataHolder.setTicketDataPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
                     netDataHolder.setTicketDataPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
+                } else if (netReference.get(IDENTIFIER_PROPERTY).asText().contains("faq_document")) {
+                    netDataHolder.setDocumentPetriNetId(netReference.get(IDENTIFIER_PROPERTY).asText());
+                    netDataHolder.setDocumentPetriNetStringId(netReference.get(STRING_ID_PROPERTY).asText());
                 }
             });
         });

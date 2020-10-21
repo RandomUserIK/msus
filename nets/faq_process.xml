@@ -7,7 +7,7 @@
     <icon>assignment</icon>
     <defaultRole>true</defaultRole>
     <transitionRole>false</transitionRole>
-    <!-- TRANSACTIONS -->
+
     <!-- ROLES -->
     <role>
         <id>admin</id>
@@ -41,6 +41,14 @@
     <data type="taskRef">
         <id>ticket_data</id>
         <title>Dáta z prijatého ticketu</title>
+    </data>
+    <data type="taskRef">
+        <id>document_data</id>
+        <title>Prijatý dokument</title>
+    </data>
+    <data type="taskRef">
+        <id>form_data</id>
+        <title>Vyplnený formulár</title>
     </data>
 
     <!-- variable arcs data -->
@@ -328,6 +336,10 @@
 		<title>Kontrolór</title>
 		<desc>kontrolór, ktorý schválil úlohu</desc>
 	</data>
+    <data type="text">
+        <id>attachment_to_main_doc</id>
+        <title/>
+    </data>
 
     <!-- TRANSITIONS -->
     <transition>
@@ -353,13 +365,23 @@
             </logic>
         </roleRef>
         <dataGroup>
-            <id>nova_uloha</id>
+            <id>form_data</id>
             <layout>legacy</layout>
+            <title>Form data</title>
             <dataRef>
-                <id>ticket_data</id>
+                <id>form_data</id>
                 <logic>
                     <behavior>hidden</behavior>
                     <behavior>optional</behavior>
+                    <action trigger="get">
+                        <!-- @formatter:off -->
+                        form_data: f.form_data,
+                        nova_uloha: t.this;
+
+                        make form_data, visible on nova_uloha when { form_data.value != null &amp;&amp; form_data.value.size() > 0 }
+                        make form_data, optional on nova_uloha when { form_data.value != null &amp;&amp; form_data.value.size() > 0 }
+                        <!-- @formatter:on -->
+                    </action>
                 </logic>
                 <layout>
                     <x>0</x>
@@ -371,14 +393,28 @@
                     <appearance>outline</appearance>
                 </layout>
             </dataRef>
+        </dataGroup>
+        <dataGroup>
+            <id>document_data</id>
+            <layout>legacy</layout>
+            <title>Document data</title>
             <dataRef>
-                <id>email_data</id>
+                <id>document_data</id>
                 <logic>
                     <behavior>hidden</behavior>
                     <behavior>optional</behavior>
+                    <action trigger="get">
+                        <!-- @formatter:off -->
+                        document_data: f.document_data,
+                        nova_uloha: t.this;
+
+                        make document_data, visible on nova_uloha when { document_data.value != null &amp;&amp; document_data.value.size() > 0 }
+                        make document_data, optional on nova_uloha when { document_data.value != null &amp;&amp; document_data.value.size() > 0 }
+                        <!-- @formatter:on -->
+                    </action>
                 </logic>
                 <layout>
-                    <x>2</x>
+                    <x>0</x>
                     <y>0</y>
                     <rows>1</rows>
                     <cols>2</cols>
@@ -387,6 +423,70 @@
                     <appearance>outline</appearance>
                 </layout>
             </dataRef>
+        </dataGroup>
+        <dataGroup>
+            <id>ticket_data</id>
+            <layout>legacy</layout>
+            <title>Ticket data</title>
+            <dataRef>
+                <id>ticket_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                    <action trigger="get">
+                        <!-- @formatter:off -->
+                        ticket_data: f.ticket_data,
+                        nova_uloha: t.this;
+
+                        make ticket_data, visible on nova_uloha when { ticket_data.value != null &amp;&amp; ticket_data.value.size() > 0 }
+                        make ticket_data, optional on nova_uloha when { ticket_data.value != null &amp;&amp; ticket_data.value.size() > 0 }
+                        <!-- @formatter:on -->
+                    </action>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+        <dataGroup>
+            <id>email_data</id>
+            <layout>legacy</layout>
+            <title>E-mail data</title>
+            <dataRef>
+                <id>email_data</id>
+                <logic>
+                    <behavior>hidden</behavior>
+                    <behavior>optional</behavior>
+                    <action trigger="get">
+                        <!-- @formatter:off -->
+                        email_data: f.email_data,
+                        nova_uloha: t.this;
+
+                        make email_data, visible on nova_uloha when { email_data.value != null &amp;&amp; email_data.value.size() > 0 }
+                        make email_data, optional on nova_uloha when { email_data.value != null &amp;&amp; email_data.value.size() > 0 }
+                        <!-- @formatter:on -->
+                    </action>
+                </logic>
+                <layout>
+                    <x>0</x>
+                    <y>0</y>
+                    <rows>1</rows>
+                    <cols>2</cols>
+                    <offset>0</offset>
+                    <template>material</template>
+                    <appearance>outline</appearance>
+                </layout>
+            </dataRef>
+        </dataGroup>
+        <dataGroup>
+            <id>nova_uloha</id>
+            <layout>legacy</layout>
             <dataRef>
                 <id>case_priority</id>
                 <logic>

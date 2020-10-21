@@ -17,4 +17,8 @@ public class PetriNetDataHolder {
 
     private String ticketDataPetriNetStringId;
 
+    private String documentPetriNetId;
+
+    private String documentPetriNetStringId;
+
 }
