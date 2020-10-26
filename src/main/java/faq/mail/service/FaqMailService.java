@@ -79,6 +79,7 @@ public class FaqMailService implements IFaqMailService {
         emailTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(emailCaseId, "5"), true);
 
         Map<String, Map<String, Object>> dataSet = prepareEmailData(emailData);
+        naeRestClient.assignTask(emailTaskId);
         naeRestClient.setData(emailTaskId, dataSet);
 
         try {
@@ -91,10 +92,10 @@ public class FaqMailService implements IFaqMailService {
 
         dataSet.clear();
         dataSet.put("channel", dataPreparationService.makeDataSetEntry("text", "E-mail"));
+        dataSet.put("client_email", dataPreparationService.makeDataSetEntry("text", emailData.getReceivedFrom()));
         dataSet.put("email_data", dataPreparationService.makeDataSetEntry("taskRef", Collections.singletonList(emailTaskId)));
         naeRestClient.setData(faqNovaUlohaTaskId, dataSet);
 
-        naeRestClient.assignTask(emailTaskId);
         naeRestClient.finishTask(emailTaskId);
         naeRestClient.cancelTask(faqNovaUlohaTaskId);
     }

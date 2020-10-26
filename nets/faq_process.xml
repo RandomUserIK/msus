@@ -31,6 +31,29 @@
         <id>status</id>
         <title>Stav úlohy</title>
         <init>Nová úloha</init>
+        <action trigger="set">
+            <!-- @formatter:off -->
+            status: f.status,
+            email_data: f.email_data,
+            ticket_data: f.ticket_data,
+            form_data: f.form_data;
+
+            def caseId = null
+            if (form_data.value != null &amp;&amp; form_data.value.size() > 0) {
+                caseId = findTask(form_data.value[0])?.caseId
+            } else if (email_data.value != null &amp;&amp; email_data.value.size() > 0) {
+                caseId = findTask(email_data.value[0])?.caseId
+            } else if (ticket_data.value != null &amp;&amp; ticket_data.value.size() > 0) {
+                caseId = findTask(ticket_data.value[0])?.caseId
+            }
+
+            if (caseId != null || caseId != "") {
+                def caze = workflowService.findOne(caseId)
+                caze.dataSet["faq_parent_status"].value = status.value
+                workflowService.save(caze)
+            }
+            <!-- @formatter:on -->
+        </action>
     </data>
 
     <!-- subprocesses refs -->
@@ -175,8 +198,7 @@
 				make suspended_by, optional on nova_uloha when { true }
 
                 change suspension_date value { return new Date() }
-                <!-- TODO: uncomment after engine bug has been fixed -->
-                <!-- change suspended_by value { return loggedUser() } -->
+                change suspended_by value { return userService.loggedUser.fullName }
                 changeCaseProperty "icon" about { "pause_circle_outline" }
 			} else {
 				make suspended_by, hidden on nova_uloha when { true }
@@ -185,6 +207,7 @@
 				make suspension_date, hidden on nova_uloha when { true }
 				make suspension_date, optional on nova_uloha when { true }
 
+                change suspended_by value { return "" }
                 changeCaseProperty "icon" about { "assignment" }
 			}
 			<!-- @formatter:on-->
@@ -290,7 +313,7 @@
         <id>suspension_date</id>
         <title>Dátum pozastavenia</title>
     </data>
-    <data type="user">
+    <data type="text">
         <id>suspended_by</id>
         <title>Pozastavil</title>
     </data>
@@ -759,6 +782,17 @@
 
         <event type="assign">
             <id>assign_33_0</id>
+            <actions phase="pre">
+                <action>
+                    <!-- @formatter:off -->
+                    suspension: f.suspension;
+
+                    if (suspension.value?.defaultValue == "Pozastaviť") {
+                        throw new IllegalArgumentException("Úloha je pozastavená a nie je možné ju preradiť!")
+                    }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
             <actions phase="post">
                 <action>
                     <!-- @formatter:off -->
@@ -781,6 +815,17 @@
         </event>
         <event type="cancel">
             <id>cancel_4</id>
+            <actions phase="pre">
+                <action>
+                    <!-- @formatter:off -->
+                    suspension: f.suspension;
+
+                    if (suspension.value?.defaultValue == "Pozastaviť") {
+                        throw new IllegalArgumentException("Úloha je pozastavená a nie je možné ju preradiť!")
+                    }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
             <actions phase="post">
                 <action>
                     <!-- @formatter:off -->
@@ -803,6 +848,17 @@
         </event>
         <event type="finish">
             <id>finish_4</id>
+            <actions phase="pre">
+                <action>
+                    <!-- @formatter:off -->
+                    suspension: f.suspension;
+
+                    if (suspension.value?.defaultValue == "Pozastaviť") {
+                        throw new IllegalArgumentException("Úloha je pozastavená a nie je možné ju preradiť!")
+                    }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
             <actions phase="post">
                 <action>
                     <!-- @formatter:off -->
@@ -814,6 +870,9 @@
                             task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("20") })
                         } else if (further_processing.value == "Vyriešiť bez kontroly") {
                             task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("19") })
+                        } else if (further_processing.value == "Poslať na kontrolu") {
+                            change status value { "Kontrola" }
+                            task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("13") })
                         } else if (further_processing.value == "Presun na iné oddelenie") {
                             task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("8") })
                         }  else if (further_processing.value == "Skartovať") {
@@ -832,42 +891,6 @@
                         }
                     } catch (Exception e) {
                         log.error("Failed to progress FAQ task", e)
-                    }
-                    <!-- @formatter:on -->
-                </action>
-                <action>
-                    <!-- @formatter:off -->
-                    history: f.history,
-                    further_processing: f.further_processing;
-
-                    String message
-                    String taskType = "ukončil úlohu [Nová úloha] s ďalším spracovaním: " + further_processing.value as String
-
-                    try {
-                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
-                    } catch (Exception ignored) {
-                        message = " Systém " + taskType
-                    }
-
-                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
-                    change history value { return history.value ? (history.value + "\n" + line) : line }
-                    <!-- @formatter:on -->
-                </action>
-                <action>
-                    <!-- @formatter:off -->
-                    status: f.status,
-                    further_processing: f.further_processing,
-                    controller: f.controller;
-
-                    <!-- TODO: assign the control task to the selected controller -->
-                    if (further_processing.value == "Poslať na kontrolu") {
-                        change status value { "Kontrola" }
-<!--                        if (controller.value) {-->
-<!--                            def task = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("13") })-->
-<!--                            if (task != null) {-->
-<!--                                taskService.assignTask(task, controller.value)-->
-<!--                            }-->
-<!--                        }-->
                     }
                     <!-- @formatter:on -->
                 </action>
@@ -894,34 +917,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_8</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_8</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_8</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>13</id>
@@ -1175,6 +1170,18 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <view>true</view>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>kontrolor</id>
+            <logic>
+                <view>true</view>
+            </logic>
+        </roleRef>
 		<dataGroup>
 			<id>vyriesena_s_kontrolou</id>
 			<layout>legacy</layout>
@@ -1339,43 +1346,6 @@
 				</layout>
 			</dataRef>
 		</dataGroup>
-        <event type="assign">
-            <id>assign_16</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_16</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_16</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_16</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>19</id>
@@ -1391,6 +1361,29 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
+        <event type="assign">
+            <id>assign_19</id>
+            <actions phase="pre">
+                <action>
+                    <!-- @formatter:off -->
+                    history: f.history,
+                    further_processing: f.further_processing;
+
+                    String message
+                    String taskType = "ukončil úlohu [Nová úloha] s ďalším spracovaním: " + further_processing.value as String
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
+                </action>
+            </actions>
+        </event>
         <event type="finish">
             <id>finish_19</id>
             <actions phase="post">
@@ -1418,40 +1411,26 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
         <event type="assign">
             <id>assign_20</id>
-            <actions phase="post">
+            <actions phase="pre">
                 <action>
                     <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_20</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_20</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_20</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
+                    history: f.history,
+                    further_processing: f.further_processing;
+
+                    String message
+                    String taskType = "ukončil úlohu [Nová úloha] s ďalším spracovaním: " + further_processing.value as String
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
                 </action>
             </actions>
         </event>
@@ -1473,37 +1452,24 @@
 
         <event type="assign">
             <id>assign_21</id>
-            <actions phase="post">
+            <actions phase="pre">
                 <action>
                     <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_21</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_21</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_21</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
+                    history: f.history,
+                    further_processing: f.further_processing;
+
+                    String message
+                    String taskType = "ukončil úlohu [Nová úloha] s ďalším spracovaním: " + further_processing.value as String
+
+                    try {
+                        message = " Používateľ " + userService.loggedUser.fullName + " " + taskType
+                    } catch (Exception ignored) {
+                        message = " Systém " + taskType
+                    }
+
+                    String line = new Date().format('dd.MM.yyyy HH:mm') + message
+                    change history value { return history.value ? (history.value + "\n" + line) : line }
+                    <!-- @formatter:on -->
                 </action>
             </actions>
         </event>
@@ -1528,34 +1494,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_22</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_22</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_22</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
         <event type="finish">
             <id>finish_22</id>
             <actions phase="post">
@@ -1583,43 +1521,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_23</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_23</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_23</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_23</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>35</id>
@@ -1635,43 +1536,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_35</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_35</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_35</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_35</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>37</id>
@@ -1686,6 +1550,12 @@
             <id>admin</id>
             <logic>
                 <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <view>true</view>
             </logic>
         </roleRef>
         <dataGroup>
@@ -1804,43 +1674,6 @@
                 </layout>
             </dataRef>
         </dataGroup>
-
-        <event type="assign">
-            <id>assign_37</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_37</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_37</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_37</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>39</id>
@@ -1856,43 +1689,12 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_39</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_39</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_39</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_39</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <view>true</view>
+            </logic>
+        </roleRef>
     </transition>
     <transition>
         <id>41</id>
@@ -1912,7 +1714,7 @@
         <roleRef>
             <id>referent</id>
             <logic>
-                <perform>true</perform>
+                <view>true</view>
             </logic>
         </roleRef>
         <roleRef>
@@ -2069,43 +1871,6 @@
                 </layout>
             </dataRef>
         </dataGroup>
-
-        <event type="assign">
-            <id>assign_41</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_41</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_41</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_41</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>43</id>
@@ -2119,6 +1884,12 @@
             <id>admin</id>
             <logic>
                 <perform>true</perform>
+            </logic>
+        </roleRef>
+        <roleRef>
+            <id>referent</id>
+            <logic>
+                <view>true</view>
             </logic>
         </roleRef>
         <dataGroup>
@@ -2234,43 +2005,6 @@
                 </layout>
             </dataRef>
         </dataGroup>
-
-        <event type="assign">
-            <id>assign_43</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_43</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_43</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_43</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>56</id>
@@ -2286,43 +2020,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_56</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_56</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_56</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_56</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>57</id>
@@ -2338,43 +2035,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_57</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_57</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_57</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_57</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>62</id>
@@ -2390,43 +2050,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_62</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_62</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_62</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="finish">
-            <id>finish_62</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
     </transition>
     <transition>
         <id>70</id>
@@ -2442,34 +2065,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-
-        <event type="assign">
-            <id>assign_70</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="cancel">
-            <id>cancel_70</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
-        <event type="delegate">
-            <id>delegate_70</id>
-            <actions phase="post">
-                <action>
-                    <!-- @formatter:off -->
-					<!-- @formatter:on -->
-                </action>
-            </actions>
-        </event>
         <event type="finish">
             <id>finish_70</id>
             <actions phase="post">
