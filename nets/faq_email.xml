@@ -109,6 +109,8 @@
         </roleRef>
         <dataGroup>
             <id>email</id>
+            <title>Email data</title>
+            <layout>legacy</layout>
             <dataRef>
                 <id>faq_parent_mongo_id</id>
                 <logic>
