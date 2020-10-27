@@ -8,5 +8,5 @@ public interface ITicketService {
 
     String resolveTicketSubmission(Map<String, String> body);
 
-    void resolveAttachmentSubmission(String caseId, MultipartFile file);
+    void resolveAttachmentSubmission(MultipartFile file);
 }

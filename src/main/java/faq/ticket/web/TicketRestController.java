@@ -48,16 +48,15 @@ public class TicketRestController {
         return new ResponseEntity<>(ticketCaseId, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/ticket/{caseId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> apiBackboneAttachmentPost(HttpServletRequest request,
-                                                            @PathVariable String caseId, MultipartFile file) {
+    @PostMapping(value = "/ticket/attachment", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> apiBackboneAttachmentPost(HttpServletRequest request, MultipartFile file) {
         if (isInvalidHeader(request)) {
             log.warn(INVALID_REQUEST_HEADER);
             return new ResponseEntity<>(ATTACHMENT_SUBMISSION_FAILURE, HttpStatus.BAD_REQUEST);
         }
 
         try {
-            ticketService.resolveAttachmentSubmission(caseId, file);
+            ticketService.resolveAttachmentSubmission(file);
         } catch (AttachmentSubmissionException ex) {
             log.error(ATTACHMENT_SUBMISSION_FAILURE, ex);
             return new ResponseEntity<>(ATTACHMENT_SUBMISSION_FAILURE, HttpStatus.INTERNAL_SERVER_ERROR);

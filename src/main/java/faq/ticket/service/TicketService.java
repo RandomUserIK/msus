@@ -7,6 +7,7 @@ import faq.mail.models.EmailData;
 import faq.ticket.domain.throwable.AttachmentSubmissionException;
 import faq.ticket.service.interfaces.ITicketService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -68,21 +70,14 @@ public class TicketService implements ITicketService {
     }
 
     @Override
-    public void resolveAttachmentSubmission(String caseId, MultipartFile file) {
+    public void resolveAttachmentSubmission(MultipartFile file) {
         try {
             File attachment = new File(storagePath + "/" + file.getOriginalFilename());
             attachment.createNewFile();
             OutputStream os = new FileOutputStream(attachment);
             os.write(file.getBytes());
 
-            String fileType = Files.probeContentType(attachment.toPath());
-
-            if (fileType.equals("PDF") || fileType.equals("DOCX"))
-                createDocumentAttachmentCase(caseId, attachment);
-            else {
-                log.error(ATTACHMENT_SUBMISSION_FAILURE);
-                throw new AttachmentSubmissionException(ATTACHMENT_SUBMISSION_FAILURE);
-            }
+            createDocumentAttachmentCase(attachment);
         } catch (IOException ex) {
             log.error(ATTACHMENT_SUBMISSION_FAILURE, ex);
             throw new AttachmentSubmissionException(ATTACHMENT_SUBMISSION_FAILURE);
@@ -101,14 +96,49 @@ public class TicketService implements ITicketService {
         return dataSet;
     }
 
-    private void createDocumentAttachmentCase(String caseId, File attachment) {
-        // TODO:
-//        String attachmentCaseId = naeRestClient.createCase(
-//                dataPreparationService.createCaseBody("FAQ Attachment", "", naeRestClient.getNetDataHolder().getFaqPetriNetStringId()));
+    private void createDocumentAttachmentCase(File attachment) {
+        String faqCaseId = dataPreparationService.extractStringId(naeRestClient.createCase(
+                dataPreparationService.createCaseBody("FAQ", "", naeRestClient.getNetDataHolder().getFaqPetriNetStringId())), false);
+        String attachmentCaseId = dataPreparationService.extractStringId(naeRestClient.createCase(
+                dataPreparationService.createCaseBody("Attachment", "", naeRestClient.getNetDataHolder().getDocumentPetriNetStringId())), false);
 
-//        if (attachmentCaseId == null || attachmentCaseId.isEmpty()) {
-//            log.error(ATTACHMENT_SUBMISSION_FAILURE);
-//            throw new AttachmentSubmissionException(ATTACHMENT_SUBMISSION_FAILURE);
-//        }
+        String faqNovaUlohaTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(faqCaseId, "4"), true);
+        String attachmentTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(attachmentCaseId, "2"), true);
+
+        naeRestClient.assignTask(faqNovaUlohaTaskId);
+        naeRestClient.assignTask(attachmentTaskId);
+        naeRestClient.finishTask(attachmentTaskId);
+
+        attachmentTaskId = dataPreparationService.extractStringId(naeRestClient.findTaskByCaseAndTransition(attachmentCaseId, "5"), true);
+
+        Map<String, Map<String, Object>> dataSet = prepareAttachmentData(faqCaseId, attachment.getName());
+        naeRestClient.setData(attachmentTaskId, dataSet);
+
+        try {
+            naeRestClient.saveFile(attachmentTaskId, "document", attachment);
+        } catch (RuntimeException ex) {
+            log.error("Failed to send attachment to NAE", ex);
+            throw new AttachmentSubmissionException(ATTACHMENT_SUBMISSION_FAILURE);
+        }
+
+        dataSet.clear();
+        dataSet.put("channel", dataPreparationService.makeDataSetEntry("text", "Attachment upload"));
+        dataSet.put("document_data", dataPreparationService.makeDataSetEntry("taskRef", Collections.singletonList(attachmentTaskId)));
+        naeRestClient.setData(faqNovaUlohaTaskId, dataSet);
+
+        naeRestClient.assignTask(attachmentTaskId);
+        naeRestClient.finishTask(attachmentTaskId);
+        naeRestClient.cancelTask(faqNovaUlohaTaskId);
+    }
+
+    private Map<String, Map<String, Object>> prepareAttachmentData(String faqParentId, String filename) {
+        Map<String, Map<String, Object>> dataSet = new LinkedHashMap<>();
+        dataSet.put("faq_parent_mongo_id", dataPreparationService.makeDataSetEntry("text", faqParentId));
+        dataSet.put("doc_number", dataPreparationService.makeDataSetEntry("text", "12345678"));
+        dataSet.put("received_date", dataPreparationService.makeDataSetEntry("text", DateFormatUtils.format(new Date(), "dd.MM.yyyy")));
+        dataSet.put("doc_type", dataPreparationService.makeDataSetEntry("text", "Vyžiadaná príloha"));
+        dataSet.put("filename", dataPreparationService.makeDataSetEntry("text", filename));
+        dataSet.put("note", dataPreparationService.makeDataSetEntry("text", "Poznámka pre riešiteľa úlohy. V prílohe zasielam vyžiadaný dokument."));
+        return dataSet;
     }
 }

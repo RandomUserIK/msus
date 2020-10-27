@@ -85,7 +85,7 @@ public class FaqMailService implements IFaqMailService {
         try {
             if (!emailData.getAttachments().isEmpty())
                 naeRestClient.saveFile(emailTaskId, "attachments",
-                        zipAttachments(storagePath + "/" + emailTaskId + ".zip", emailData.getAttachments()).getFile());
+                        dataPreparationService.zipAttachments(storagePath + "/" + emailTaskId + ".zip", emailData.getAttachments()).getFile());
         } catch (IOException ex) {
             log.error("Failed to put attachments into the dataSet", ex);
         }
@@ -109,11 +109,5 @@ public class FaqMailService implements IFaqMailService {
         dataSet.put("sent_date", dataPreparationService.makeDataSetEntry("text", emailData.getDateSent()));
         dataSet.put("received_date", dataPreparationService.makeDataSetEntry("text", emailData.getDateReceived()));
         return dataSet;
-    }
-
-    private ZipFile zipAttachments(String zipFilePath, List<File> attachments) throws ZipException {
-        ZipFile zipFile = new ZipFile(zipFilePath);
-        zipFile.addFiles(attachments);
-        return zipFile;
     }
 }

@@ -6,10 +6,14 @@ import faq.integration.nae.models.CreateCaseBody;
 import faq.integration.nae.service.interfaces.IDataPreparationService;
 import groovy.json.JsonOutput;
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -46,5 +50,12 @@ public class DataPreparationService implements IDataPreparationService {
     @Override
     public String extractStringId(ObjectNode naeResponse, boolean isTaskSearch) {
         return isTaskSearch ? naeResponse.get("_embedded").get("tasks").get(0).get(STRING_ID).asText() : naeResponse.get(STRING_ID).asText();
+    }
+
+    @Override
+    public ZipFile zipAttachments(String zipFilePath, List<File> attachments) throws ZipException {
+        ZipFile zipFile = new ZipFile(zipFilePath);
+        zipFile.addFiles(attachments);
+        return zipFile;
     }
 }

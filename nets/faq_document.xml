@@ -7,32 +7,38 @@
 	<transitionRole>false</transitionRole>
 
 	<!-- ROLES -->
-	<!-- TODO: -->
+	<role>
+		<id>admin</id>
+		<title>Admin</title>
+	</role>
 
 	<!-- DATA -->
 	<data type="text">
-		<id>text_8</id>
-		<title>Číslo dokumentu</title>
-	</data>
-	<data type="boolean">
-		<id>boolean_2</id>
-		<title>Hlavný dokument</title>
-		<init>false</init>
+		<id>faq_parent_mongo_id</id>
+		<title/>
 	</data>
 	<data type="text">
-		<id>text_9</id>
+		<id>doc_number</id>
+		<title>Číslo dokumentu</title>
+	</data>
+	<data type="text">
+		<id>doc_type</id>
+		<title>Typ dokumentu</title>
+	</data>
+	<data type="text">
+		<id>received_date</id>
 		<title>Dátum prijatia</title>
 	</data>
 	<data type="text">
-		<id>text_10</id>
+		<id>filename</id>
 		<title>Názov súboru</title>
 	</data>
 	<data type="file">
-		<id>file_2</id>
+		<id>document</id>
 		<title>Dokument</title>
 	</data>
 	<data type="text">
-		<id>text_11</id>
+		<id>note</id>
 		<title>Poznámka</title>
 		<values>area</values>
 	</data>
@@ -42,9 +48,6 @@
 		<id>2</id>
 		<x>343</x>
 		<y>140</y>
-		<layout>
-			<offset>0</offset>
-		</layout>
 		<label>Vytvoriť</label>
 		<icon>settings</icon>
 	</transition>
@@ -52,96 +55,51 @@
 		<id>5</id>
 		<x>580</x>
 		<y>140</y>
-		<layout>
-			<offset>0</offset>
-		</layout>
-		<label>Upraviť</label>
+		<label>Detail</label>
 		<icon>input</icon>
 		<dataGroup>
-			<id>DataGroup_0</id>
+			<id>info_group</id>
+			<title>Document data</title>
 			<layout>grid</layout>
 			<dataRef>
-				<id>text_8</id>
+				<id>doc_number</id>
 				<logic>
-					<behavior>editable</behavior>
+					<behavior>visible</behavior>
 					<behavior>required</behavior>
 				</logic>
-				<layout>
-					<x>2</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
-				<id>boolean_2</id>
+				<id>doc_type</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>received_date</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-				</layout>
 			</dataRef>
 			<dataRef>
-				<id>text_9</id>
+				<id>filename</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>2</x>
-					<y>2</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
-				<id>text_10</id>
-				<logic>
-					<behavior>editable</behavior>
-					<behavior>optional</behavior>
-				</logic>
-				<layout>
-					<x>2</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-			<dataRef>
-				<id>file_2</id>
+				<id>document</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-				</layout>
 			</dataRef>
 			<dataRef>
-				<id>text_11</id>
+				<id>note</id>
 				<logic>
-					<behavior>editable</behavior>
+					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
 				<layout>
