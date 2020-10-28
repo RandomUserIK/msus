@@ -59,6 +59,7 @@ public class TicketService implements ITicketService {
 
         dataSet.clear();
         dataSet.put("channel", dataPreparationService.makeDataSetEntry("text", "e-Ticket"));
+        dataSet.put("client_email", dataPreparationService.makeDataSetEntry("text", body.get("client_email")));
         dataSet.put("ticket_data", dataPreparationService.makeDataSetEntry("taskRef", Collections.singletonList(ticketTaskId)));
         naeRestClient.setData(faqNovaUlohaTaskId, dataSet);
 
@@ -93,6 +94,7 @@ public class TicketService implements ITicketService {
         dataSet.put("ticket_id", dataPreparationService.makeDataSetEntry("text", body.get("ticketId")));
         dataSet.put("note", dataPreparationService.makeDataSetEntry("text", body.get("note")));
         dataSet.put("client_birth_number", dataPreparationService.makeDataSetEntry("text", body.get("client_birth_number")));
+        dataSet.put("task_name", dataPreparationService.makeDataSetEntry("text", body.get("task_name")));
         return dataSet;
     }
 

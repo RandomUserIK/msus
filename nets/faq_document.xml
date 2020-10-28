@@ -60,7 +60,7 @@
 		<dataGroup>
 			<id>info_group</id>
 			<title>Document data</title>
-			<layout>grid</layout>
+			<layout>legacy</layout>
 			<dataRef>
 				<id>doc_number</id>
 				<logic>

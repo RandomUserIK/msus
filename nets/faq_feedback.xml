@@ -17,13 +17,6 @@
 	</role>
 
 	<!-- DATA -->
-	<data type="enumeration">
-		<id>question_severity</id>
-		<title>Závažnosť Vašej otázky</title>
-		<values>vysoká</values>
-		<values>nízka</values>
-		<init>nízka</init>
-	</data>
 	<data type="text">
 		<id>client_name</id>
 		<title>Meno</title>
@@ -38,11 +31,6 @@
 		<valid>email</valid>
 	</data>
 	<data type="text">
-		<id>question</id>
-		<title>Otázka</title>
-		<length>1950</length>
-	</data>
-	<data type="text">
 		<id>faq_parent_id</id>
 		<title/>
 	</data>
@@ -50,6 +38,122 @@
 		<id>faq_parent_status</id>
 		<title>Stav úlohy</title>
 		<init>Nová úloha</init>
+	</data>
+	<data type="text">
+		<id>referent_note</id>
+		<title>Poznámka od riešiteľa</title>
+		<values>area</values>
+	</data>
+
+	<data type="taskRef">
+		<id>questions</id>
+		<title>Otázky</title>
+	</data>
+	<data type="button">
+		<id>create_question</id>
+		<title/>
+		<placeholder>Pridať otázku</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			def petriNet = petriNetService.getAll().find { petriNet -> petriNet.title == "FAQ Feedback Question" }
+			def caseForTaskRef = createCase(petriNet.identifier)
+			caseForTaskRef.dataSet["parent_id"].value = useCase.stringId
+
+			if (useCase.dataSet["questions"].value == null) {
+				change useCase.getField("questions") value { [caseForTaskRef.tasks[0].task] }
+			} else {
+				change useCase.getField("questions") value { useCase.dataSet["questions"].value + [caseForTaskRef.tasks[0].task] }
+			}
+
+			workflowService.save(caseForTaskRef)
+			<!-- @formatter:on -->
+		</action>
+	</data>
+	<data type="button">
+		<id>remove_question</id>
+		<title/>
+		<placeholder>Odstrániť otázku</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			change useCase.getField("questions") value {
+				useCase.dataSet["questions"].value.take(useCase.dataSet["questions"].value.size() - 1)
+			}
+			<!-- @formatter:on -->
+		</action>
+	</data>
+
+	<data type="taskRef">
+		<id>compliments</id>
+		<title>Pochvaly</title>
+	</data>
+	<data type="button">
+		<id>create_compliment</id>
+		<title/>
+		<placeholder>Pridať pochvalu</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			def petriNet = petriNetService.getAll().find { petriNet -> petriNet.title == "FAQ Feedback Compliment" }
+			def caseForTaskRef = createCase(petriNet.identifier)
+			caseForTaskRef.dataSet["parent_id"].value = useCase.stringId
+
+			if (useCase.dataSet["compliments"].value == null) {
+				change useCase.getField("compliments") value { [caseForTaskRef.tasks[0].task] }
+			} else {
+				change useCase.getField("compliments") value { useCase.dataSet["compliments"].value + [caseForTaskRef.tasks[0].task] }
+			}
+
+			workflowService.save(caseForTaskRef)
+			<!-- @formatter:on -->
+		</action>
+	</data>
+	<data type="button">
+		<id>remove_compliment</id>
+		<title/>
+		<placeholder>Odstrániť pochvalu</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			change useCase.getField("compliments") value {
+				useCase.dataSet["compliments"].value.take(useCase.dataSet["compliments"].value.size() - 1)
+			}
+			<!-- @formatter:on -->
+		</action>
+	</data>
+
+	<data type="taskRef">
+		<id>complaints</id>
+		<title>Sťažnosti</title>
+	</data>
+	<data type="button">
+		<id>create_complaint</id>
+		<title/>
+		<placeholder>Pridať sťažnosť</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			def petriNet = petriNetService.getAll().find { petriNet -> petriNet.title == "FAQ Feedback Complaint" }
+			def caseForTaskRef = createCase(petriNet.identifier)
+			caseForTaskRef.dataSet["parent_id"].value = useCase.stringId
+
+			if (useCase.dataSet["complaints"].value == null) {
+				change useCase.getField("complaints") value { [caseForTaskRef.tasks[0].task] }
+			} else {
+				change useCase.getField("complaints") value { useCase.dataSet["complaints"].value + [caseForTaskRef.tasks[0].task] }
+			}
+
+			workflowService.save(caseForTaskRef)
+			<!-- @formatter:on -->
+		</action>
+	</data>
+	<data type="button">
+		<id>remove_complaint</id>
+		<title/>
+		<placeholder>Odstrániť sťažnosť</placeholder>
+		<action trigger="set">
+			<!-- @formatter:off -->
+			change useCase.getField("complaints") value {
+				useCase.dataSet["complaints"].value.take(useCase.dataSet["complaints"].value.size() - 1)
+			}
+			<!-- @formatter:on -->
+		</action>
 	</data>
 
 	<!-- TRANSITIONS -->
@@ -76,41 +180,16 @@
 			<title>Vyplnenie formuláru</title>
 			<layout>legacy</layout>
 			<dataRef>
-				<id>question_severity</id>
-				<logic>
-					<behavior>editable</behavior>
-					<behavior>optional</behavior>
-				</logic>
-			</dataRef>
-			<dataRef>
 				<id>client_name</id>
 				<logic>
 					<behavior>editable</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_surname</id>
 				<logic>
 					<behavior>editable</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_email</id>
@@ -118,48 +197,114 @@
 					<behavior>editable</behavior>
 					<behavior>required</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-			<dataRef>
-				<id>question</id>
-				<logic>
-					<behavior>editable</behavior>
-					<behavior>required</behavior>
-				</logic>
-				<layout>
-					<x>0</x>
-					<y>2</y>
-					<rows>3</rows>
-					<cols>3</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 		</dataGroup>
+		<dataGroup>
+			<id>questions_group</id>
+			<title>Otázky</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>questions</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>add_remove_questions</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>create_question</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>remove_question</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>compliments_group</id>
+			<title>Pochvaly</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>compliments</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>add_remove_compliments</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>create_compliment</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>remove_compliment</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>complaints_group</id>
+			<title>Sťažnosti</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>complaints</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>add_remove_complaints</id>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>create_complaint</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>remove_complaint</id>
+				<logic>
+					<behavior>editable</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+
 		<event type="finish">
 			<actions phase="post">
-				<!-- @formatter:off -->
-				faq_parent_id: f.faq_parent_id;
+				<action>
+					<!-- @formatter:off -->
+					client_email: f.client_email,
+					faq_parent_id: f.faq_parent_id;
 
-				def petriNet = petriNetService.getAll().find { petriNet -> petriNet.title == "FAQ Process" }
-				def caze = createCase(petriNet.identifier, "FAQ Question", "", userService.loggedOrSystem)
+					def petriNet = petriNetService.getAll().find { petriNet -> petriNet.title == "FAQ Process" }
+					def caze = createCase(petriNet.identifier, "FAQ", "", userService.loggedOrSystem)
+					String detailTaskId = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("4") })
 
-				String detailTaskId = findTask({ it.caseId.eq(useCase.stringId) &amp; it.transitionId.eq("4") })
-				caze.dataSet['form_data'].value = Collections.singletonList(detailTaskId)
-				caze.dataSet['channel'].value = "e-Form"
-				workflowService.save(caze)
+					stop(caze)
+					change caze.getField("form_data") value { [detailTaskId] }
 
-				change faq_parent_id value { return caze.stringId }
-				<!-- @formatter:on -->
+					caze.dataSet["client_email"].value = client_email.value
+					caze.dataSet["channel"].value = "e-Form"
+
+					change faq_parent_id value { return caze.stringId }
+					workflowService.save(caze)
+					<!-- @formatter:on -->
+				</action>
 			</actions>
 		</event>
 	</transition>
@@ -174,36 +319,11 @@
 			<title>Feedback data</title>
 			<layout>legacy</layout>
 			<dataRef>
-				<id>question_severity</id>
-				<logic>
-					<behavior>visible</behavior>
-					<behavior>optional</behavior>
-				</logic>
-				<layout>
-					<x>2</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-			<dataRef>
 				<id>client_name</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_surname</id>
@@ -211,15 +331,6 @@
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>2</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_email</id>
@@ -227,31 +338,54 @@
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
+		</dataGroup>
+<!--		<dataGroup>-->
+<!--			<id>questions_group</id>-->
+<!--			<title>Otázky</title>-->
+<!--			<layout>legacy</layout>-->
+<!--			<dataRef>-->
+<!--				<id>questions</id>-->
+<!--				<logic>-->
+<!--					<behavior>visible</behavior>-->
+<!--					<behavior>optional</behavior>-->
+<!--				</logic>-->
+<!--			</dataRef>-->
+<!--		</dataGroup>-->
+<!--		<dataGroup>-->
+<!--			<id>compliments_group</id>-->
+<!--			<title>Pochvaly</title>-->
+<!--			<layout>legacy</layout>-->
+<!--			<dataRef>-->
+<!--				<id>compliments</id>-->
+<!--				<logic>-->
+<!--					<behavior>visible</behavior>-->
+<!--					<behavior>optional</behavior>-->
+<!--				</logic>-->
+<!--			</dataRef>-->
+<!--		</dataGroup>-->
+<!--		<dataGroup>-->
+<!--			<id>complaints_group</id>-->
+<!--			<title>Sťažnosti</title>-->
+<!--			<layout>legacy</layout>-->
+<!--			<dataRef>-->
+<!--				<id>complaints</id>-->
+<!--				<logic>-->
+<!--					<behavior>visible</behavior>-->
+<!--					<behavior>optional</behavior>-->
+<!--				</logic>-->
+<!--			</dataRef>-->
+<!--		</dataGroup>-->
+		<dataGroup>
+			<id>remark_group</id>
+			<title>Poznámka</title>
+			<layout>legacy</layout>
 			<dataRef>
-				<id>question</id>
+				<id>referent_note</id>
 				<logic>
-					<behavior>visible</behavior>
+					<behavior>editable</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>2</y>
-					<rows>3</rows>
-					<cols>3</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 		</dataGroup>
 	</transition>
@@ -273,36 +407,11 @@
 				</logic>
 			</dataRef>
 			<dataRef>
-				<id>question_severity</id>
-				<logic>
-					<behavior>visible</behavior>
-					<behavior>optional</behavior>
-				</logic>
-				<layout>
-					<x>2</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
-			</dataRef>
-			<dataRef>
 				<id>client_name</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_surname</id>
@@ -310,15 +419,6 @@
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>2</x>
-					<y>0</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
 			<dataRef>
 				<id>client_email</id>
@@ -326,31 +426,66 @@
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>1</y>
-					<rows>1</rows>
-					<cols>2</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
 			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>questions_group</id>
+			<title>Otázky</title>
+			<layout>legacy</layout>
 			<dataRef>
-				<id>question</id>
+				<id>questions</id>
 				<logic>
 					<behavior>visible</behavior>
 					<behavior>optional</behavior>
 				</logic>
-				<layout>
-					<x>0</x>
-					<y>2</y>
-					<rows>3</rows>
-					<cols>3</cols>
-					<offset>0</offset>
-					<template>material</template>
-					<appearance>outline</appearance>
-				</layout>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>compliments_group</id>
+			<title>Pochvaly</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>compliments</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>complaints_group</id>
+			<title>Sťažnosti</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>complaints</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+		</dataGroup>
+		<dataGroup>
+			<id>remark_group</id>
+			<title>Poznámka</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>referent_note</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+					<action trigger="get">
+						<!-- @formatter:off -->
+						referent_note: f.referent_note,
+						status_tracker: t.5;
+
+						make referent_note, visible on status_tracker when { return (referent_note.value != null &amp;&amp; referent_note.value != "") }
+						make referent_note, optional on status_tracker when { return (referent_note.value != null &amp;&amp; referent_note.value != "") }
+
+						make referent_note, hidden on status_tracker when { return !(referent_note.value != null &amp;&amp; referent_note.value != "") }
+						make referent_note, optional on status_tracker when { return !(referent_note.value != null &amp;&amp; referent_note.value != "") }
+						<!-- @formatter:on -->
+					</action>
+				</logic>
 			</dataRef>
 		</dataGroup>
 	</transition>

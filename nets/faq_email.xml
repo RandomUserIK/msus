@@ -14,18 +14,6 @@
         <title>Admin</title>
     </role>
     <role>
-        <id>system</id>
-        <title>Systém</title>
-    </role>
-    <role>
-        <id>referent</id>
-        <title>Referent</title>
-    </role>
-    <role>
-        <id>kontrolor</id>
-        <title>Kontrolór</title>
-    </role>
-    <role>
         <id>client</id>
         <title>Klient</title>
     </role>
@@ -83,14 +71,6 @@
                 <perform>true</perform>
             </logic>
         </roleRef>
-        <roleRef>
-            <id>system</id>
-            <logic>
-                <perform>true</perform>
-            </logic>
-        </roleRef>
-        <assignPolicy>auto</assignPolicy>
-        <finishPolicy>auto_no_data</finishPolicy>
     </transition>
     <transition>
         <id>5</id>
