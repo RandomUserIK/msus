@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>faq_document</id>
+	<initials>FQD</initials>
+	<title>FAQ Document</title>
+	<defaultRole>true</defaultRole>
+	<transitionRole>false</transitionRole>
+
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>Admin</title>
+	</role>
+
+	<!-- DATA -->
+	<data type="text">
+		<id>faq_parent_mongo_id</id>
+		<title/>
+	</data>
+	<data type="text">
+		<id>doc_number</id>
+		<title>Číslo dokumentu</title>
+	</data>
+	<data type="text">
+		<id>doc_type</id>
+		<title>Typ dokumentu</title>
+	</data>
+	<data type="text">
+		<id>received_date</id>
+		<title>Dátum prijatia</title>
+	</data>
+	<data type="text">
+		<id>filename</id>
+		<title>Názov súboru</title>
+	</data>
+	<data type="file">
+		<id>document</id>
+		<title>Dokument</title>
+	</data>
+	<data type="text">
+		<id>note</id>
+		<title>Poznámka</title>
+		<values>area</values>
+	</data>
+
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>2</id>
+		<x>343</x>
+		<y>140</y>
+		<label>Vytvoriť</label>
+		<icon>settings</icon>
+	</transition>
+	<transition>
+		<id>5</id>
+		<x>580</x>
+		<y>140</y>
+		<label>Detail</label>
+		<icon>input</icon>
+		<dataGroup>
+			<id>info_group</id>
+			<title>Document data</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>doc_number</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>doc_type</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>required</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>received_date</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>filename</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>document</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+			</dataRef>
+			<dataRef>
+				<id>note</id>
+				<logic>
+					<behavior>visible</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>2</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+	</transition>
+
+	<!-- PLACES -->
+	<place>
+		<id>1</id>
+		<x>220</x>
+		<y>140</y>
+		<label>init</label>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+	<place>
+		<id>4</id>
+		<x>460</x>
+		<y>140</y>
+		<label>Vytvorený</label>
+		<tokens>0</tokens>
+		<static>false</static>
+	</place>
+
+	<!-- ARCS -->
+	<arc>
+		<id>3</id>
+		<type>regular</type>
+		<sourceId>1</sourceId>
+		<destinationId>2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>6</id>
+		<type>read</type>
+		<sourceId>4</sourceId>
+		<destinationId>5</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+	<arc>
+		<id>7</id>
+		<type>regular</type>
+		<sourceId>2</sourceId>
+		<destinationId>4</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>

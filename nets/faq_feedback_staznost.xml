@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://modeler.netgrif.com/petriflow_schema.xsd">
+	<id>faq_feedback_complaint</id>
+	<version>1.0.0</version>
+	<initials>FQC</initials>
+	<title>FAQ Feedback Complaint</title>
+	<icon>home</icon>
+	<defaultRole>true</defaultRole>
+	<transitionRole>false</transitionRole>
+
+	<!-- ROLES -->
+	<role>
+		<id>admin</id>
+		<title>Admin</title>
+	</role>
+
+	<!-- DATA -->
+	<data type="text">
+		<id>complaint</id>
+		<title>Sťažnosť</title>
+		<values>area</values>
+	</data>
+	<data type="text">
+		<id>parent_id</id>
+		<title/>
+	</data>
+
+	<!-- TRANSITIONS -->
+	<transition>
+		<id>2</id>
+		<x>343</x>
+		<y>109</y>
+		<layout>
+			<offset>0</offset>
+		</layout>
+		<label>Sťažnosť</label>
+		<roleRef>
+			<id>admin</id>
+			<logic>
+				<perform>true</perform>
+			</logic>
+		</roleRef>
+		<dataGroup>
+			<id>complaint</id>
+			<title>Sťažnosť</title>
+			<layout>legacy</layout>
+			<dataRef>
+				<id>complaint</id>
+				<logic>
+					<behavior>editable</behavior>
+					<behavior>optional</behavior>
+				</logic>
+				<layout>
+					<x>0</x>
+					<y>2</y>
+					<rows>2</rows>
+					<cols>3</cols>
+					<offset>0</offset>
+					<template>material</template>
+					<appearance>outline</appearance>
+				</layout>
+			</dataRef>
+		</dataGroup>
+	</transition>
+
+	<!-- PLACES -->
+	<place>
+		<id>1</id>
+		<x>183</x>
+		<y>120</y>
+		<label/>
+		<tokens>1</tokens>
+		<static>false</static>
+	</place>
+
+	<!-- ARCS -->
+	<arc>
+		<id>3</id>
+		<type>read</type>
+		<sourceId>1</sourceId>
+		<destinationId>2</destinationId>
+		<multiplicity>1</multiplicity>
+	</arc>
+</document>
